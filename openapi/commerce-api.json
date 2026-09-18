@@ -1992,10 +1992,6 @@
       "Warehouse": {
         "additionalProperties": false,
         "properties": {
-          "Priority": {
-            "format": "int64",
-            "type": "integer"
-          },
           "created_at": {
             "format": "date-time",
             "type": "string"
@@ -2006,6 +2002,10 @@
           },
           "name": {
             "type": "string"
+          },
+          "priority": {
+            "format": "int64",
+            "type": "integer"
           },
           "status": {
             "enum": [
@@ -2027,7 +2027,7 @@
           "id",
           "store_id",
           "name",
-          "Priority",
+          "priority",
           "status",
           "created_at",
           "updated_at"
@@ -2729,6 +2729,15 @@
         "operationId": "carts.carts.list",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "explode": false,
             "in": "query",
             "name": "cursor",
@@ -2844,6 +2853,15 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -3223,6 +3241,24 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cart_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -3501,6 +3537,33 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cart_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -3633,6 +3696,24 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cart_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -3755,6 +3836,15 @@
         "operationId": "channels.storeChannels.list",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "explode": false,
             "in": "query",
             "name": "cursor",
@@ -3871,6 +3961,15 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -4481,6 +4580,15 @@
         "operationId": "media.objects.list",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "explode": false,
             "in": "query",
             "name": "cursor",
@@ -4599,6 +4707,15 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -5487,6 +5604,15 @@
         "operationId": "pricing.priceLists.list",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "explode": false,
             "in": "query",
             "name": "cursor",
@@ -5603,6 +5729,15 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -5734,6 +5869,24 @@
         "operationId": "pricing.priceLists.get",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "price_list_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "in": "header",
             "name": "If-None-Match",
             "schema": {
@@ -5847,6 +6000,24 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "price_list_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -6270,6 +6441,24 @@
         "operationId": "pricing.priceEntries.list",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "price_list_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "explode": false,
             "in": "query",
             "name": "cursor",
@@ -6529,6 +6718,33 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "price_list_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -6650,6 +6866,17 @@
       "post": {
         "description": "Prices variants now from active, valid lists in the currency, and explains which list version produced each price. Quotes are not reservations; checkout recalculates.",
         "operationId": "pricing.quotes.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -6750,6 +6977,15 @@
         "description": "Newest first, without variants.",
         "operationId": "catalog.products.list",
         "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
           {
             "explode": false,
             "in": "query",
@@ -6882,6 +7118,15 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -7012,6 +7257,24 @@
         "operationId": "catalog.products.get",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "in": "header",
             "name": "If-None-Match",
             "schema": {
@@ -7125,6 +7388,24 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -7706,6 +7987,24 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -7828,6 +8127,15 @@
         "operationId": "promotions.promotions.list",
         "parameters": [
           {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
             "explode": false,
             "in": "query",
             "name": "cursor",
@@ -7944,6 +8252,15 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -8067,6 +8384,17 @@
       "post": {
         "description": "Runs the store's active promotions over a basket without recording anything: every promotion considered, why it did or did not apply, and the discount per line. The same engine the cart and the checkout use.",
         "operationId": "promotions.evaluations.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -8800,6 +9128,17 @@
       "post": {
         "description": "Stock that can still be reserved, summed over active warehouses. It is read from the primary and never cached; it is not a reservation.",
         "operationId": "inventory.availability.check",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -8899,6 +9238,15 @@
       "get": {
         "operationId": "inventory.warehouses.list",
         "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
           {
             "explode": false,
             "in": "query",
@@ -9015,6 +9363,15 @@
             "schema": {
               "maxLength": 255,
               "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
               "type": "string"
             }
           }
@@ -9149,6 +9506,24 @@
               "minLength": 1,
               "type": "string"
             }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "warehouse_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
           }
         ],
         "requestBody": {
@@ -9270,6 +9645,24 @@
       "get": {
         "operationId": "inventory.stockPositions.list",
         "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "warehouse_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
           {
             "explode": false,
             "in": "query",
