@@ -1,0 +1,2186 @@
+{
+  "envelope": [
+    {
+      "name": "event_id",
+      "type": "uuid"
+    },
+    {
+      "name": "event_type",
+      "type": "string"
+    },
+    {
+      "name": "event_version",
+      "type": "integer"
+    },
+    {
+      "name": "module",
+      "type": "string"
+    },
+    {
+      "name": "occurred_at",
+      "type": "timestamp"
+    },
+    {
+      "name": "organization_id",
+      "type": "uuid",
+      "optional": true
+    },
+    {
+      "name": "store_id",
+      "type": "uuid",
+      "optional": true
+    },
+    {
+      "name": "cell_id",
+      "type": "string"
+    },
+    {
+      "name": "correlation_id",
+      "type": "uuid"
+    },
+    {
+      "name": "causation_id",
+      "type": "uuid",
+      "optional": true
+    },
+    {
+      "name": "data",
+      "type": "object"
+    }
+  ],
+  "events": [
+    {
+      "module": "carts",
+      "type": "cart.abandoned",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.carts.cart.abandoned.v1",
+      "payload": [
+        {
+          "name": "cart_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "buyer_reference",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "carts",
+      "type": "cart.checked_out",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.carts.cart.checked_out.v1",
+      "payload": [
+        {
+          "name": "cart_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "checkout_id",
+          "type": "uuid"
+        }
+      ]
+    },
+    {
+      "module": "carts",
+      "type": "cart.expired",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.carts.cart.expired.v1",
+      "payload": [
+        {
+          "name": "cart_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "buyer_reference",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "catalog",
+      "type": "product.archived",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.catalog.product.archived.v1",
+      "payload": [
+        {
+          "name": "product_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "catalog",
+      "type": "product.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.catalog.product.created.v1",
+      "payload": [
+        {
+          "name": "product_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "catalog",
+      "type": "product.published",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.catalog.product.published.v1",
+      "payload": [
+        {
+          "name": "product_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "catalog",
+      "type": "product.unpublished",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.catalog.product.unpublished.v1",
+      "payload": [
+        {
+          "name": "product_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "catalog",
+      "type": "variant.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.catalog.variant.created.v1",
+      "payload": [
+        {
+          "name": "variant_id",
+          "type": "uuid"
+        },
+        {
+          "name": "product_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "sku",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "channels",
+      "type": "channel.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.channels.channel.created.v1",
+      "payload": [
+        {
+          "name": "channel_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "code",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "channels",
+      "type": "channel.status_changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.channels.channel.status_changed.v1",
+      "payload": [
+        {
+          "name": "channel_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "code",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "commissions",
+      "type": "commission.calculated",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.commissions.commission.calculated.v1",
+      "payload": [
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "base_amount",
+          "type": "integer"
+        },
+        {
+          "name": "rate_ppm",
+          "type": "integer"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "rule_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "rule_version",
+          "type": "integer",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "cell.status_changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.cell.status_changed.v1",
+      "payload": [
+        {
+          "name": "cell_id",
+          "type": "string"
+        },
+        {
+          "name": "region",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "module.disabled",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.module.disabled.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "module_id",
+          "type": "string"
+        },
+        {
+          "name": "module_version",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "module.enabled",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.module.enabled.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "module_id",
+          "type": "string"
+        },
+        {
+          "name": "module_version",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "module.installed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.module.installed.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "module_id",
+          "type": "string"
+        },
+        {
+          "name": "module_version",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "module.kill_switch_changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.module.kill_switch_changed.v1",
+      "payload": [
+        {
+          "name": "module_id",
+          "type": "string"
+        },
+        {
+          "name": "active",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "module.uninstalled",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.module.uninstalled.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "module_id",
+          "type": "string"
+        },
+        {
+          "name": "module_version",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "policy.changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.policy.changed.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "plan_id",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "policy_key",
+          "type": "string"
+        },
+        {
+          "name": "change",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "controlplane",
+      "type": "store.placed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.controlplane.store.placed.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "cell_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "identity",
+      "type": "membership.granted",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.identity.membership.granted.v1",
+      "payload": [
+        {
+          "name": "membership_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "subject",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "identity",
+      "type": "membership.revoked",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.identity.membership.revoked.v1",
+      "payload": [
+        {
+          "name": "membership_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "subject",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "identity",
+      "type": "role.changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.identity.role.changed.v1",
+      "payload": [
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "change",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "inventory",
+      "type": "reservation.confirmed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.inventory.reservation.confirmed.v1",
+      "payload": [
+        {
+          "name": "reservation_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "reference",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp"
+        },
+        {
+          "name": "lines",
+          "type": "array\u003cobject\u003e"
+        }
+      ]
+    },
+    {
+      "module": "inventory",
+      "type": "reservation.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.inventory.reservation.created.v1",
+      "payload": [
+        {
+          "name": "reservation_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "reference",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp"
+        },
+        {
+          "name": "lines",
+          "type": "array\u003cobject\u003e"
+        }
+      ]
+    },
+    {
+      "module": "inventory",
+      "type": "reservation.expired",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.inventory.reservation.expired.v1",
+      "payload": [
+        {
+          "name": "reservation_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "reference",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp"
+        },
+        {
+          "name": "lines",
+          "type": "array\u003cobject\u003e"
+        }
+      ]
+    },
+    {
+      "module": "inventory",
+      "type": "reservation.released",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.inventory.reservation.released.v1",
+      "payload": [
+        {
+          "name": "reservation_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "reference",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp"
+        },
+        {
+          "name": "lines",
+          "type": "array\u003cobject\u003e"
+        }
+      ]
+    },
+    {
+      "module": "inventory",
+      "type": "stock.adjusted",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.inventory.stock.adjusted.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "warehouse_id",
+          "type": "uuid"
+        },
+        {
+          "name": "variant_id",
+          "type": "uuid"
+        },
+        {
+          "name": "delta",
+          "type": "integer"
+        },
+        {
+          "name": "on_hand",
+          "type": "integer"
+        },
+        {
+          "name": "reserved",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "jobs",
+      "type": "job.finished",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.jobs.job.finished.v1",
+      "payload": [
+        {
+          "name": "job_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "failure_code",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "result_ref",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "jobs",
+      "type": "job.submitted",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.jobs.job.submitted.v1",
+      "payload": [
+        {
+          "name": "job_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "failure_code",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "result_ref",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "ledger",
+      "type": "transaction.posted",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.ledger.transaction.posted.v1",
+      "payload": [
+        {
+          "name": "transaction_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "total",
+          "type": "integer"
+        },
+        {
+          "name": "rule_id",
+          "type": "string"
+        },
+        {
+          "name": "rule_version",
+          "type": "integer"
+        },
+        {
+          "name": "source_type",
+          "type": "string"
+        },
+        {
+          "name": "source_id",
+          "type": "string"
+        },
+        {
+          "name": "corrects",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "entry_count",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "media",
+      "type": "media.archived",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.media.media.archived.v1",
+      "payload": [
+        {
+          "name": "media_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "integer"
+        },
+        {
+          "name": "checksum_sha256",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "media",
+      "type": "media.deleted",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.media.media.deleted.v1",
+      "payload": [
+        {
+          "name": "media_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "integer"
+        },
+        {
+          "name": "checksum_sha256",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "media",
+      "type": "media.published",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.media.media.published.v1",
+      "payload": [
+        {
+          "name": "media_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "integer"
+        },
+        {
+          "name": "checksum_sha256",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "media",
+      "type": "media.ready",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.media.media.ready.v1",
+      "payload": [
+        {
+          "name": "media_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "integer"
+        },
+        {
+          "name": "checksum_sha256",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "media",
+      "type": "media.rejected",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.media.media.rejected.v1",
+      "payload": [
+        {
+          "name": "media_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "integer"
+        },
+        {
+          "name": "checksum_sha256",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "media",
+      "type": "media.uploaded",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.media.media.uploaded.v1",
+      "payload": [
+        {
+          "name": "media_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "content_type",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "integer"
+        },
+        {
+          "name": "checksum_sha256",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "orders",
+      "type": "order.cancelled",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.orders.order.cancelled.v1",
+      "payload": [
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "subtotal_amount",
+          "type": "integer"
+        },
+        {
+          "name": "subtotal_currency",
+          "type": "string"
+        },
+        {
+          "name": "channel_id",
+          "type": "uuid",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "orders",
+      "type": "order.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.orders.order.created.v1",
+      "payload": [
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "subtotal_amount",
+          "type": "integer"
+        },
+        {
+          "name": "subtotal_currency",
+          "type": "string"
+        },
+        {
+          "name": "channel_id",
+          "type": "uuid",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "orders",
+      "type": "order.placed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.orders.order.placed.v1",
+      "payload": [
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "subtotal_amount",
+          "type": "integer"
+        },
+        {
+          "name": "subtotal_currency",
+          "type": "string"
+        },
+        {
+          "name": "channel_id",
+          "type": "uuid",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "organizations",
+      "type": "account.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.organizations.account.created.v1",
+      "payload": [
+        {
+          "name": "account_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "organizations",
+      "type": "organization.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.organizations.organization.created.v1",
+      "payload": [
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "payments",
+      "type": "payment.authorized",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.payments.payment.authorized.v1",
+      "payload": [
+        {
+          "name": "payment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "authorized_amount",
+          "type": "integer"
+        },
+        {
+          "name": "captured_amount",
+          "type": "integer"
+        },
+        {
+          "name": "refunded_amount",
+          "type": "integer"
+        },
+        {
+          "name": "operation_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "payments",
+      "type": "payment.captured",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.payments.payment.captured.v1",
+      "payload": [
+        {
+          "name": "payment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "authorized_amount",
+          "type": "integer"
+        },
+        {
+          "name": "captured_amount",
+          "type": "integer"
+        },
+        {
+          "name": "refunded_amount",
+          "type": "integer"
+        },
+        {
+          "name": "operation_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "payments",
+      "type": "payment.failed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.payments.payment.failed.v1",
+      "payload": [
+        {
+          "name": "payment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "authorized_amount",
+          "type": "integer"
+        },
+        {
+          "name": "captured_amount",
+          "type": "integer"
+        },
+        {
+          "name": "refunded_amount",
+          "type": "integer"
+        },
+        {
+          "name": "operation_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "payments",
+      "type": "payment.refunded",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.payments.payment.refunded.v1",
+      "payload": [
+        {
+          "name": "payment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "authorized_amount",
+          "type": "integer"
+        },
+        {
+          "name": "captured_amount",
+          "type": "integer"
+        },
+        {
+          "name": "refunded_amount",
+          "type": "integer"
+        },
+        {
+          "name": "operation_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "payments",
+      "type": "payment.voided",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.payments.payment.voided.v1",
+      "payload": [
+        {
+          "name": "payment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "authorized_amount",
+          "type": "integer"
+        },
+        {
+          "name": "captured_amount",
+          "type": "integer"
+        },
+        {
+          "name": "refunded_amount",
+          "type": "integer"
+        },
+        {
+          "name": "operation_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "pricing",
+      "type": "price_list.activated",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.pricing.price_list.activated.v1",
+      "payload": [
+        {
+          "name": "price_list_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "pricing",
+      "type": "price_list.archived",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.pricing.price_list.archived.v1",
+      "payload": [
+        {
+          "name": "price_list_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "pricing",
+      "type": "price_list.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.pricing.price_list.created.v1",
+      "payload": [
+        {
+          "name": "price_list_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "pricing",
+      "type": "price_list.updated",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.pricing.price_list.updated.v1",
+      "payload": [
+        {
+          "name": "price_list_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "promotions",
+      "type": "promotion.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.promotions.promotion.created.v1",
+      "payload": [
+        {
+          "name": "promotion_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "ruleset_version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "promotions",
+      "type": "promotion.redeemed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.promotions.promotion.redeemed.v1",
+      "payload": [
+        {
+          "name": "promotion_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "promotions",
+      "type": "promotion.status_changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.promotions.promotion.status_changed.v1",
+      "payload": [
+        {
+          "name": "promotion_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "ruleset_version",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "reconciliation",
+      "type": "case.closed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.reconciliation.case.closed.v1",
+      "payload": [
+        {
+          "name": "case_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "source_type",
+          "type": "string"
+        },
+        {
+          "name": "source_id",
+          "type": "string"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "expected_amount",
+          "type": "integer"
+        },
+        {
+          "name": "actual_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "reconciliation",
+      "type": "case.opened",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.reconciliation.case.opened.v1",
+      "payload": [
+        {
+          "name": "case_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid",
+          "optional": true
+        },
+        {
+          "name": "source_type",
+          "type": "string"
+        },
+        {
+          "name": "source_id",
+          "type": "string"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "expected_amount",
+          "type": "integer"
+        },
+        {
+          "name": "actual_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "shipping",
+      "type": "shipment.cancelled",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.shipping.shipment.cancelled.v1",
+      "payload": [
+        {
+          "name": "shipment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "carrier",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "tracking_code",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "price_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "shipping",
+      "type": "shipment.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.shipping.shipment.created.v1",
+      "payload": [
+        {
+          "name": "shipment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "carrier",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "tracking_code",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "price_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "shipping",
+      "type": "shipment.delivered",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.shipping.shipment.delivered.v1",
+      "payload": [
+        {
+          "name": "shipment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "carrier",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "tracking_code",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "price_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "shipping",
+      "type": "shipment.tracked",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.shipping.shipment.tracked.v1",
+      "payload": [
+        {
+          "name": "shipment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "carrier",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "tracking_code",
+          "type": "string",
+          "optional": true
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "price_amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "stores",
+      "type": "store.activated",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.stores.store.activated.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "cell_id",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "stores",
+      "type": "store.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.stores.store.created.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "account_id",
+          "type": "uuid"
+        },
+        {
+          "name": "country",
+          "type": "string"
+        },
+        {
+          "name": "home_region",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "webhooks",
+      "type": "subscription.created",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.webhooks.subscription.created.v1",
+      "payload": [
+        {
+          "name": "subscription_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "endpoint",
+          "type": "string"
+        },
+        {
+          "name": "event_types",
+          "type": "array\u003cstring\u003e"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "webhooks",
+      "type": "subscription.deleted",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.webhooks.subscription.deleted.v1",
+      "payload": [
+        {
+          "name": "subscription_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "endpoint",
+          "type": "string"
+        },
+        {
+          "name": "event_types",
+          "type": "array\u003cstring\u003e"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ]
+    }
+  ]
+}
