@@ -44,6 +44,10 @@
           "promotion_id": {
             "format": "uuid",
             "type": "string"
+          },
+          "residue": {
+            "description": "Apportionment method, when the discount was over the whole basket.",
+            "type": "string"
           }
         },
         "required": [
@@ -75,6 +79,10 @@
           },
           "promotion_id": {
             "format": "uuid",
+            "type": "string"
+          },
+          "residue": {
+            "description": "Apportionment method, when the discount was over the whole basket (DEC-FIN-003).",
             "type": "string"
           },
           "version": {
@@ -555,6 +563,12 @@
             "type": "boolean"
           },
           "max_uses": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "max_uses_per_buyer": {
+            "description": "How often one buyer may redeem it; a basket with no buyer never gets a promotion that has this.",
             "format": "int64",
             "minimum": 1,
             "type": "integer"
@@ -1077,6 +1091,27 @@
         ],
         "type": "object"
       },
+      "ListOutputBody5": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Review"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "LivenessOutputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1507,6 +1542,11 @@
             "format": "int64",
             "type": "integer"
           },
+          "max_uses_per_buyer": {
+            "description": "How often one buyer may redeem it; absent means only the overall limit applies.",
+            "format": "int64",
+            "type": "integer"
+          },
           "name": {
             "type": "string"
           },
@@ -1782,6 +1822,21 @@
         ],
         "type": "object"
       },
+      "RejectInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "description": "Why it was refused; the buyer can be shown this.",
+            "maxLength": 500,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "reason"
+        ],
+        "type": "object"
+      },
       "Reservation": {
         "additionalProperties": false,
         "properties": {
@@ -1854,6 +1909,76 @@
           "variant_id",
           "warehouse_id",
           "quantity"
+        ],
+        "type": "object"
+      },
+      "Review": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "buyer_reference": {
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "moderated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "moderated_by": {
+            "type": "string"
+          },
+          "moderation_reason": {
+            "type": "string"
+          },
+          "product_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rating": {
+            "format": "int64",
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "seller_order_id": {
+            "description": "The purchase behind it, when the review names one.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "published",
+              "rejected",
+              "withdrawn"
+            ],
+            "type": "string"
+          },
+          "store_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "store_id",
+          "product_id",
+          "buyer_reference",
+          "rating",
+          "status",
+          "created_at"
         ],
         "type": "object"
       },
@@ -1937,6 +2062,231 @@
         },
         "required": [
           "quantity"
+        ],
+        "type": "object"
+      },
+      "StorefrontCart": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "discount_amount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "lines": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCartLine"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "ready": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string"
+          },
+          "subtotal_amount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "total_amount": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "currency",
+          "status",
+          "lines",
+          "subtotal_amount",
+          "discount_amount",
+          "total_amount",
+          "ready"
+        ],
+        "type": "object"
+      },
+      "StorefrontCartInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "description": "ISO 4217, uppercase.",
+            "maxLength": 3,
+            "minLength": 3,
+            "type": "string"
+          }
+        },
+        "required": [
+          "currency"
+        ],
+        "type": "object"
+      },
+      "StorefrontCartLine": {
+        "additionalProperties": false,
+        "properties": {
+          "line_amount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "product_title": {
+            "type": "string"
+          },
+          "quantity": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "unit_amount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "variant_id": {
+            "format": "uuid",
+            "type": "string"
+          }
+        },
+        "required": [
+          "variant_id",
+          "sku",
+          "title",
+          "product_title",
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "StorefrontItemInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "quantity": {
+            "description": "Zero removes the line.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "quantity"
+        ],
+        "type": "object"
+      },
+      "StorefrontListOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontProduct"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "StorefrontProduct": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "variants": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontVariant"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description"
+        ],
+        "type": "object"
+      },
+      "StorefrontVariant": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sku",
+          "title"
+        ],
+        "type": "object"
+      },
+      "SubmitInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "body": {
+            "maxLength": 4000,
+            "type": "string"
+          },
+          "buyer_reference": {
+            "description": "The account writing it. It must have a delivered order of this product.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "product_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "rating": {
+            "format": "int64",
+            "maximum": 5,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "title": {
+            "maxLength": 120,
+            "type": "string"
+          }
+        },
+        "required": [
+          "product_id",
+          "buyer_reference",
+          "rating"
         ],
         "type": "object"
       },
@@ -2104,6 +2454,21 @@
         },
         "required": [
           "items"
+        ],
+        "type": "object"
+      },
+      "WithdrawInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "buyer_reference": {
+            "description": "The account that wrote it. Only its author withdraws a review.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "buyer_reference"
         ],
         "type": "object"
       }
@@ -2776,6 +3141,323 @@
         ]
       }
     },
+    "/v1/storefronts/{store_id}/carts": {
+      "post": {
+        "description": "An anonymous cart. Whoever holds its id holds the cart: most sales begin before anybody logs in, and requiring an account to hold a basket loses the sale. It carries no personal data until a checkout asks for some.",
+        "operationId": "storefront.carts.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontCartInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCart"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Start a cart",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/carts/{cart_id}": {
+      "get": {
+        "description": "The cart, priced. Whoever holds the id may read it.",
+        "operationId": "storefront.carts.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cart_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCart"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Read a cart",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "tenant-read",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/carts/{cart_id}/items/{variant_id}": {
+      "put": {
+        "description": "Sets the quantity of one variant, replacing what was there. Zero removes the line. The price is the store's at the moment the cart is read, not at the moment the item went in.",
+        "operationId": "storefront.cartItems.set",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "cart_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "variant_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontItemInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCart"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Put a variant in a cart",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 8,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/products": {
+      "get": {
+        "description": "The published catalogue of one store, for a buyer with no credential. Only published products appear: a draft is the seller's working copy and has never been offered to anybody.",
+        "operationId": "storefront.products.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontListOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Browse a shop",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "shared",
+        "x-sellvex-latency-budget-p99-ms": 50,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "public-read",
+        "x-sellvex-replica-allowed": true,
+        "x-sellvex-replica-max-lag-ms": 5000
+      }
+    },
+    "/v1/storefronts/{store_id}/products/{product_id}": {
+      "get": {
+        "description": "One published product of a store, with its variants. A product that is not published is absent rather than forbidden: a buyer learns nothing from the difference, and the difference would say which drafts exist.",
+        "operationId": "storefront.products.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontProduct"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Read a product",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "shared",
+        "x-sellvex-latency-budget-p99-ms": 50,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "public-read",
+        "x-sellvex-replica-allowed": true,
+        "x-sellvex-replica-max-lag-ms": 5000
+      }
+    },
     "/v1/stores/{store_id}/carts": {
       "get": {
         "operationId": "carts.carts.list",
@@ -2884,7 +3566,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -3022,7 +3705,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -3131,7 +3815,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -3270,7 +3955,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -3417,7 +4103,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -3565,7 +4252,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -3722,7 +4410,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -3872,7 +4561,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -4735,7 +5425,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -4876,7 +5567,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -4975,7 +5667,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -5083,7 +5776,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -5222,7 +5916,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -5361,7 +6056,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -5501,7 +6197,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -5640,7 +6337,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -5759,7 +6457,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -5905,7 +6604,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -6030,7 +6730,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -6185,7 +6886,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -6331,7 +7033,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -6477,7 +7180,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -6605,7 +7309,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -6746,7 +7451,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -6903,7 +7609,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -7013,7 +7720,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -7146,7 +7854,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -7292,7 +8001,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -7418,7 +8128,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -7573,7 +8284,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -7720,7 +8432,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -7867,13 +8580,124 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
         "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-permission": "catalog.products.publish",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/products/{product_id}/reviews": {
+      "get": {
+        "description": "What a shopper sees: the reviews a moderator approved, newest first, and nothing pending or refused.",
+        "operationId": "reviews.productReviews.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List a product's published reviews",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "reviews.reviews.read",
         "x-sellvex-replica-allowed": false,
         "x-sellvex-scope": "store"
       }
@@ -8014,7 +8838,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -8163,7 +8988,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -8282,7 +9108,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -8421,7 +9248,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -8531,7 +9359,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -8640,7 +9469,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -8779,7 +9609,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -8918,7 +9749,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -9057,7 +9889,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -9165,13 +9998,828 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
         "x-sellvex-max-database-queries": 4,
         "x-sellvex-performance-class": "authenticated-read",
         "x-sellvex-permission": "inventory.reservations.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/reviews": {
+      "get": {
+        "description": "The store's own view, moderation queue included. What a shopper sees is the public listing, which shows approved reviews only.",
+        "operationId": "reviews.reviews.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListOutputBody5"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List reviews",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "reviews.reviews.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      },
+      "post": {
+        "description": "Records a review by an account with a delivered order of this product. It stays pending until a moderator approves it: every review is seen before it appears (DEC-REVIEW-001).",
+        "operationId": "reviews.reviews.submit",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Submit a review",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "reviews.reviews.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/reviews/{review_id}": {
+      "get": {
+        "description": "One review, with who moderated it and why.",
+        "operationId": "reviews.reviews.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Get review",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "reviews.reviews.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/reviews/{review_id}/publish": {
+      "post": {
+        "description": "Approves a pending review, which is what makes it visible in the store. Naming who approved is part of the record.",
+        "operationId": "reviews.reviews.publish",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Publish a review",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "reviews.reviews.moderate",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/reviews/{review_id}/reject": {
+      "post": {
+        "description": "Refuses a review, naming who decided and why. The reason is what the buyer can be shown.",
+        "operationId": "reviews.reviews.reject",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RejectInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Reject a review",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "reviews.reviews.moderate",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/reviews/{review_id}/withdraw": {
+      "post": {
+        "description": "Takes a review back. Only its author can: it is their text, whatever moderation decided.",
+        "operationId": "reviews.reviews.withdraw",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "review_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WithdrawInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Review"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Withdraw a review",
+        "tags": [
+          "reviews"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "reviews.reviews.write",
         "x-sellvex-replica-allowed": false,
         "x-sellvex-scope": "store"
       }
@@ -9294,7 +10942,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -9405,7 +11054,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -9524,7 +11174,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -9662,7 +11313,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -9812,7 +11464,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -9940,7 +11593,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "api_client"
+          "api_client",
+          "extension"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -9953,6 +11607,10 @@
     }
   },
   "servers": [
+    {
+      "description": "admin",
+      "url": "https://admin.sellvex.com.br"
+    },
     {
       "description": "local stack",
       "url": "http://localhost:8082"

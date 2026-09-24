@@ -566,6 +566,38 @@
     },
     {
       "module": "identity",
+      "type": "impersonation.started",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.identity.impersonation.started.v1",
+      "payload": [
+        {
+          "name": "session_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "operator_id",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "identity",
       "type": "membership.granted",
       "version": 1,
       "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.identity.membership.granted.v1",
@@ -2343,6 +2375,38 @@
     },
     {
       "module": "stores",
+      "type": "hostname.changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.stores.hostname.changed.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "hostname",
+          "type": "string"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "state",
+          "type": "string"
+        },
+        {
+          "name": "serving",
+          "type": "boolean"
+        }
+      ]
+    },
+    {
+      "module": "stores",
       "type": "store.activated",
       "version": 1,
       "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.stores.store.activated.v1",
@@ -2358,6 +2422,34 @@
         {
           "name": "cell_id",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "stores",
+      "type": "store.availability",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.stores.store.availability.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "selling",
+          "type": "boolean"
+        },
+        {
+          "name": "paused",
+          "type": "boolean"
+        },
+        {
+          "name": "suspended",
+          "type": "boolean"
         }
       ]
     },
@@ -2386,6 +2478,22 @@
         {
           "name": "home_region",
           "type": "string"
+        }
+      ]
+    },
+    {
+      "module": "stores",
+      "type": "store.updated",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.stores.store.updated.v1",
+      "payload": [
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
         }
       ]
     },
