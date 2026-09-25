@@ -2701,6 +2701,7 @@
           "reason": {
             "description": "Justification, recorded in the audit trail. Required to disable or uninstall.",
             "maxLength": 500,
+            "minLength": 5,
             "type": "string"
           }
         },
