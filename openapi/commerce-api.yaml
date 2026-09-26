@@ -1659,6 +1659,11 @@ components:
     StorefrontVariant:
       additionalProperties: false
       properties:
+        amount:
+          format: int64
+          type: integer
+        currency:
+          type: string
         id:
           format: uuid
           type: string
@@ -2424,7 +2429,7 @@ paths:
         - storefront
       x-sellvex-cache-policy: shared
       x-sellvex-latency-budget-p99-ms: 50
-      x-sellvex-max-database-queries: 3
+      x-sellvex-max-database-queries: 4
       x-sellvex-performance-class: public-read
       x-sellvex-replica-allowed: true
       x-sellvex-replica-max-lag-ms: 5000
@@ -2463,7 +2468,7 @@ paths:
         - storefront
       x-sellvex-cache-policy: shared
       x-sellvex-latency-budget-p99-ms: 50
-      x-sellvex-max-database-queries: 3
+      x-sellvex-max-database-queries: 4
       x-sellvex-performance-class: public-read
       x-sellvex-replica-allowed: true
       x-sellvex-replica-max-lag-ms: 5000
