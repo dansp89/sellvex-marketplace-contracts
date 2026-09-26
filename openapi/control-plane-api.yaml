@@ -1692,6 +1692,38 @@ components:
       required:
         - items
       type: object
+    Permission:
+      additionalProperties: false
+      properties:
+        levels:
+          items:
+            enum:
+              - platform
+              - organization
+              - store
+            type: string
+          type:
+            - array
+            - "null"
+        name:
+          description: módulo.recurso.ação
+          type: string
+      required:
+        - name
+        - levels
+      type: object
+    PermissionsOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/Permission"
+          type:
+            - array
+            - "null"
+      required:
+        - items
+      type: object
     Placement:
       additionalProperties: false
       properties:
@@ -6471,6 +6503,104 @@ paths:
       x-sellvex-max-database-queries: 8
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: identity.memberships.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/platform/permissions:
+    get:
+      description: "Every permission this deployable registers, with the levels each may be granted at. It is what a screen needs to compose a custom role: without it, whoever writes one has to know the names by heart, and a name typed wrong is refused at the end rather than absent from the list."
+      operationId: identity.permissions.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PermissionsOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: The permission catalogue
+      tags:
+        - identity
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 0
+      x-sellvex-performance-class: tenant-read
+      x-sellvex-permission: identity.roles.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/platform/roles:
+    get:
+      description: The posts somebody who operates the platform may hold, with what each one grants. They are derived from the permission catalogue rather than stored, so a module registering new operations is covered without any list being edited.
+      operationId: identity.platformRoles.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RolesOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List platform roles
+      tags:
+        - identity
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: tenant-read
+      x-sellvex-permission: identity.roles.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: platform
   /v1/privacy-requests:
