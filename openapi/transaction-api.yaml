@@ -5312,6 +5312,9 @@ paths:
       x-sellvex-max-database-queries: 4
       x-sellvex-performance-class: authenticated-read
       x-sellvex-permission: orders.orders.read
+      x-sellvex-reads:
+        - personal
+        - financial
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/orders/{order_id}/cancel:
