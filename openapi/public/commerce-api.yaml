@@ -399,6 +399,9 @@ components:
     CreateInputBody:
       additionalProperties: false
       properties:
+        brand:
+          maxLength: 120
+          type: string
         description:
           maxLength: 10000
           type: string
@@ -531,6 +534,10 @@ components:
     EditInputBody:
       additionalProperties: false
       properties:
+        brand:
+          description: Empty clears the brand.
+          maxLength: 120
+          type: string
         description:
           maxLength: 10000
           type: string
@@ -1786,6 +1793,8 @@ components:
         position:
           format: int64
           type: integer
+        url:
+          type: string
       required:
         - media_id
         - position
@@ -1875,6 +1884,9 @@ components:
           format: int64
           type: integer
         available:
+          format: int64
+          type: integer
+        compare_at:
           format: int64
           type: integer
         currency:
@@ -5037,7 +5049,7 @@ paths:
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
     patch:
-      description: Changes title or description. Publication changes use the publish, unpublish and archive commands.
+      description: Changes title, description or brand. Publication changes use the publish, unpublish and archive commands.
       operationId: catalog.products.update
       parameters:
         - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
