@@ -313,6 +313,85 @@
         ],
         "type": "object"
       },
+      "Category": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "position": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "position"
+        ],
+        "type": "object"
+      },
+      "CategoryInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          },
+          "parent_id": {
+            "description": "Absent for a root.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "position": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "slug": {
+            "description": "Lowercase, digits and single hyphens.",
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "slug"
+        ],
+        "type": "object"
+      },
+      "CategoryListOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Category"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "Channel": {
         "additionalProperties": false,
         "properties": {
@@ -1519,6 +1598,9 @@
       "Product": {
         "additionalProperties": false,
         "properties": {
+          "brand": {
+            "type": "string"
+          },
           "created_at": {
             "format": "date-time",
             "type": "string"
@@ -1587,6 +1669,44 @@
           "created_at",
           "updated_at",
           "version"
+        ],
+        "type": "object"
+      },
+      "ProductCategoriesInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "category_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "category_ids"
+        ],
+        "type": "object"
+      },
+      "ProductCategoriesOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "category_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "category_ids"
         ],
         "type": "object"
       },
@@ -2256,6 +2376,54 @@
         ],
         "type": "object"
       },
+      "StorefrontCategoriesOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StorefrontCategory"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "StorefrontCategory": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "parent_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "position": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "slug": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "slug",
+          "position"
+        ],
+        "type": "object"
+      },
       "StorefrontImage": {
         "additionalProperties": false,
         "properties": {
@@ -2316,6 +2484,19 @@
       "StorefrontProduct": {
         "additionalProperties": false,
         "properties": {
+          "brand": {
+            "type": "string"
+          },
+          "category_ids": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "description": {
             "type": "string"
           },
@@ -3484,6 +3665,55 @@
         "x-sellvex-replica-allowed": false
       }
     },
+    "/v1/storefronts/{store_id}/categories": {
+      "get": {
+        "description": "How the shop organises what it sells, for a buyer with no credential. Ordered: roots first, then each level, siblings by position.",
+        "operationId": "storefront.categories.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontCategoriesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "The menu of a shop",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "shared",
+        "x-sellvex-latency-budget-p99-ms": 50,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "public-read",
+        "x-sellvex-replica-allowed": true,
+        "x-sellvex-replica-max-lag-ms": 5000
+      }
+    },
     "/v1/storefronts/{store_id}/products": {
       "get": {
         "description": "The published catalogue of one store, for a buyer with no credential. Only published products appear: a draft is the seller's working copy and has never been offered to anybody.",
@@ -3546,7 +3776,7 @@
         ],
         "x-sellvex-cache-policy": "shared",
         "x-sellvex-latency-budget-p99-ms": 50,
-        "x-sellvex-max-database-queries": 7,
+        "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "public-read",
         "x-sellvex-replica-allowed": true,
         "x-sellvex-replica-max-lag-ms": 5000
@@ -3604,7 +3834,7 @@
         ],
         "x-sellvex-cache-policy": "shared",
         "x-sellvex-latency-budget-p99-ms": 50,
-        "x-sellvex-max-database-queries": 7,
+        "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "public-read",
         "x-sellvex-replica-allowed": true,
         "x-sellvex-replica-max-lag-ms": 5000
@@ -4721,6 +4951,247 @@
         "x-sellvex-max-database-queries": 15,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-permission": "carts.carts.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/categories": {
+      "get": {
+        "description": "The whole tree of the store, ordered: roots first, then each level, siblings by position.",
+        "operationId": "catalog.categories.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CategoryListOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List categories",
+        "tags": [
+          "catalog"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "catalog.products.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      },
+      "post": {
+        "description": "Adds a node to the tree. The parent must belong to the same store, and the tree is bounded in depth.",
+        "operationId": "catalog.categories.create",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CategoryInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Category"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Create a category",
+        "tags": [
+          "catalog"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 8,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "catalog.products.write",
         "x-sellvex-replica-allowed": false,
         "x-sellvex-scope": "store"
       }
@@ -8011,7 +8482,7 @@
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
-        "x-sellvex-max-database-queries": 5,
+        "x-sellvex-max-database-queries": 6,
         "x-sellvex-performance-class": "authenticated-read",
         "x-sellvex-permission": "catalog.products.read",
         "x-sellvex-replica-allowed": false,
@@ -8285,7 +8756,7 @@
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
-        "x-sellvex-max-database-queries": 5,
+        "x-sellvex-max-database-queries": 6,
         "x-sellvex-performance-class": "authenticated-read",
         "x-sellvex-permission": "catalog.products.read",
         "x-sellvex-replica-allowed": false,
@@ -8592,6 +9063,157 @@
         "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-permission": "catalog.products.publish",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/products/{product_id}/categories": {
+      "put": {
+        "description": "Replaces which categories the product is in. An empty list takes it out of all of them.",
+        "operationId": "catalog.productCategories.set",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "product_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProductCategoriesInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProductCategoriesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set the categories of a product",
+        "tags": [
+          "catalog"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 10,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "catalog.products.write",
         "x-sellvex-replica-allowed": false,
         "x-sellvex-scope": "store"
       }
