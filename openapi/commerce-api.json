@@ -2332,6 +2332,9 @@
               "null"
             ]
           },
+          "rating": {
+            "$ref": "#/components/schemas/StorefrontRating"
+          },
           "title": {
             "type": "string"
           },
@@ -2349,6 +2352,26 @@
           "id",
           "title",
           "description"
+        ],
+        "type": "object"
+      },
+      "StorefrontRating": {
+        "additionalProperties": false,
+        "properties": {
+          "average_hundredths": {
+            "description": "The average in hundredths: 450 is 4.5.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "total": {
+            "description": "How many published reviews.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "average_hundredths",
+          "total"
         ],
         "type": "object"
       },
@@ -3519,7 +3542,7 @@
         ],
         "x-sellvex-cache-policy": "shared",
         "x-sellvex-latency-budget-p99-ms": 50,
-        "x-sellvex-max-database-queries": 5,
+        "x-sellvex-max-database-queries": 6,
         "x-sellvex-performance-class": "public-read",
         "x-sellvex-replica-allowed": true,
         "x-sellvex-replica-max-lag-ms": 5000
@@ -3577,7 +3600,7 @@
         ],
         "x-sellvex-cache-policy": "shared",
         "x-sellvex-latency-budget-p99-ms": 50,
-        "x-sellvex-max-database-queries": 5,
+        "x-sellvex-max-database-queries": 6,
         "x-sellvex-performance-class": "public-read",
         "x-sellvex-replica-allowed": true,
         "x-sellvex-replica-max-lag-ms": 5000
