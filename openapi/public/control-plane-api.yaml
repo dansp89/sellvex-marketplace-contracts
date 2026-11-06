@@ -523,6 +523,24 @@ components:
       required:
         - status
       type: object
+    MyEmailConfirmation:
+      additionalProperties: false
+      properties:
+        token:
+          maxLength: 128
+          minLength: 1
+          type: string
+      required:
+        - token
+      type: object
+    MyEmailConfirmed:
+      additionalProperties: false
+      properties:
+        email:
+          type: string
+      required:
+        - email
+      type: object
     NotificationTemplate:
       additionalProperties: false
       properties:
@@ -937,6 +955,37 @@ paths:
       summary: Get readiness
       tags:
         - health
+  /v1/me/email/confirm:
+    post:
+      description: Applies the e-mail change the link's token names, once. An unknown, used or expired token answers 404.
+      operationId: identity.me.emailConfirm
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MyEmailConfirmation"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyEmailConfirmed"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: Confirm an e-mail change
+      tags:
+        - identity
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 1000
+      x-sellvex-max-database-queries: 6
+      x-sellvex-performance-class: control-plane
+      x-sellvex-replica-allowed: false
   /v1/platform/bootstrap:
     get:
       description: True while the platform has no operator, so a sign-in screen can offer the first configuration.
