@@ -248,6 +248,34 @@
       ]
     },
     {
+      "module": "cdl",
+      "type": "store.imported",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.cdl.store.imported.v1",
+      "payload": [
+        {
+          "name": "cdl_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "external_ref",
+          "type": "string"
+        },
+        {
+          "name": "source",
+          "type": "string"
+        }
+      ]
+    },
+    {
       "module": "channels",
       "type": "channel.created",
       "version": 1,
