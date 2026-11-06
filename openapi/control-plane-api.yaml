@@ -179,6 +179,29 @@ components:
         - created_at
         - updated_at
       type: object
+    BlockInputBody:
+      additionalProperties: false
+      properties:
+        reason:
+          description: What happened, in words. Recorded in the audit trail and shown to the merchant.
+          maxLength: 500
+          minLength: 10
+          type: string
+        reason_code:
+          description: The listed reason.
+          enum:
+            - registration_irregularity
+            - documents_or_tax
+            - customer_complaints
+            - suspected_fraud
+            - policy_violation
+            - merchant_request
+            - other
+          type: string
+      required:
+        - reason_code
+        - reason
+      type: object
     CDL:
       additionalProperties: false
       properties:
@@ -2642,7 +2665,26 @@ components:
         suspended:
           description: The platform stopped this store. Only the platform lifts it.
           type: boolean
+        suspended_at:
+          format: date-time
+          type: string
+        suspended_by_level:
+          enum:
+            - platform
+            - organization
+          type: string
         suspended_reason:
+          description: The detail of the block, in words.
+          type: string
+        suspended_reason_code:
+          enum:
+            - registration_irregularity
+            - documents_or_tax
+            - customer_complaints
+            - suspected_fraud
+            - policy_violation
+            - merchant_request
+            - other
           type: string
         timezone:
           description: IANA time zone.
@@ -2839,6 +2881,17 @@ components:
           maxLength: 500
           minLength: 1
           type: string
+        reason_code:
+          description: The listed reason. Defaults to other.
+          enum:
+            - registration_irregularity
+            - documents_or_tax
+            - customer_complaints
+            - suspected_fraud
+            - policy_violation
+            - merchant_request
+            - other
+          type: string
       required:
         - reason
       type: object
@@ -2855,6 +2908,17 @@ components:
           type: string
       required:
         - items
+      type: object
+    UnblockInputBody:
+      additionalProperties: false
+      properties:
+        note:
+          description: Why the block is being lifted. Recorded in the audit trail.
+          maxLength: 500
+          minLength: 1
+          type: string
+      required:
+        - note
       type: object
     UpdateStoreInputBody:
       additionalProperties: false
@@ -6656,6 +6720,39 @@ paths:
             maximum: 200
             minimum: 1
             type: integer
+        - description: active keeps the stores not blocked; blocked keeps the blocked ones.
+          explode: false
+          in: query
+          name: status
+          schema:
+            description: active keeps the stores not blocked; blocked keeps the blocked ones.
+            enum:
+              - active
+              - blocked
+            type: string
+        - description: Keeps the stores blocked for this reason.
+          explode: false
+          in: query
+          name: reason
+          schema:
+            description: Keeps the stores blocked for this reason.
+            enum:
+              - registration_irregularity
+              - documents_or_tax
+              - customer_complaints
+              - suspected_fraud
+              - policy_violation
+              - merchant_request
+              - other
+            type: string
+        - description: Keeps the stores whose name contains this text, ignoring case.
+          explode: false
+          in: query
+          name: q
+          schema:
+            description: Keeps the stores whose name contains this text, ignoring case.
+            maxLength: 100
+            type: string
       responses:
         "200":
           content:
@@ -6796,6 +6893,198 @@ paths:
       x-sellvex-max-database-queries: 8
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: stores.stores.create
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: organization
+  /v1/organizations/{organization_id}/stores/{store_id}/block:
+    post:
+      description: "The store's organization takes it off the air, with a listed reason and the detail. Nothing is deleted: the catalogue, the orders and the panel stay, and lifting the block puts the store back on sale. A store the platform already blocked is refused with stores.already_blocked_by_the_platform."
+      operationId: stores.stores.block
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: organization_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BlockInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Store"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Block store
+      tags:
+        - stores
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: stores.stores.block
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: organization
+  /v1/organizations/{organization_id}/stores/{store_id}/unblock:
+    post:
+      description: "Lifts the organization's own block. A block the platform applied is refused with stores.suspension_is_the_platforms: only the platform lifts that."
+      operationId: stores.stores.unblock
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: organization_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UnblockInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Store"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Unblock store
+      tags:
+        - stores
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: stores.stores.block
       x-sellvex-replica-allowed: false
       x-sellvex-scope: organization
   /v1/plans/{plan_id}/policies/{policy_key}:
@@ -12842,7 +13131,7 @@ paths:
       x-sellvex-scope: store
   /v1/stores/{store_id}/reactivate:
     post:
-      description: Lifts the platform's suspension. A merchant's own pause, if one is also in place, survives.
+      description: "Lifts a block, whichever authority applied it: the platform lifts its own and the store's organization's. A merchant's own pause, if one is also in place, survives."
       operationId: stores.stores.reactivate
       parameters:
         - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.

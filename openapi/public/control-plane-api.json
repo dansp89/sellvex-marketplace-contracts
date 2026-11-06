@@ -1084,7 +1084,31 @@
             "description": "The platform stopped this store. Only the platform lifts it.",
             "type": "boolean"
           },
+          "suspended_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "suspended_by_level": {
+            "enum": [
+              "platform",
+              "organization"
+            ],
+            "type": "string"
+          },
           "suspended_reason": {
+            "description": "The detail of the block, in words.",
+            "type": "string"
+          },
+          "suspended_reason_code": {
+            "enum": [
+              "registration_irregularity",
+              "documents_or_tax",
+              "customer_complaints",
+              "suspected_fraud",
+              "policy_violation",
+              "merchant_request",
+              "other"
+            ],
             "type": "string"
           },
           "timezone": {
