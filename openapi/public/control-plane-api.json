@@ -803,9 +803,9 @@
             "type": "string"
           },
           "password": {
-            "description": "Goes to the identity provider; the platform never keeps it.",
+            "description": "Goes to the identity provider; the platform never keeps it. At least 6 characters in local and CI, 12 in staging and production (see min_password_length).",
             "maxLength": 256,
-            "minLength": 12,
+            "minLength": 6,
             "type": "string"
           }
         },
@@ -840,13 +840,19 @@
       "PlatformBootstrapStatus": {
         "additionalProperties": false,
         "properties": {
+          "min_password_length": {
+            "description": "Shortest password accepted: 6 in local and CI, 12 in staging and production.",
+            "format": "int64",
+            "type": "integer"
+          },
           "open": {
             "description": "True while the platform has no operator. Says nothing else.",
             "type": "boolean"
           }
         },
         "required": [
-          "open"
+          "open",
+          "min_password_length"
         ],
         "type": "object"
       },
