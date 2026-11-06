@@ -10193,19 +10193,6 @@
       "post": {
         "description": "Creates the login in the identity provider and the platform membership with the develop role. Requires the installation code, works once — while nobody operates the platform — and is audited.",
         "operationId": "identity.bootstrap.create",
-        "parameters": [
-          {
-            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
-            "in": "header",
-            "name": "Idempotency-Key",
-            "required": true,
-            "schema": {
-              "maxLength": 255,
-              "minLength": 1,
-              "type": "string"
-            }
-          }
-        ],
         "requestBody": {
           "content": {
             "application/json": {
@@ -10227,7 +10214,7 @@
             },
             "description": "Created"
           },
-          "400": {
+          "default": {
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -10235,37 +10222,7 @@
                 }
               }
             },
-            "description": "Bad Request"
-          },
-          "409": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Conflict"
-          },
-          "422": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "500": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Problem"
-                }
-              }
-            },
-            "description": "Internal Server Error"
+            "description": "Error"
           }
         },
         "summary": "Create the first develop",
