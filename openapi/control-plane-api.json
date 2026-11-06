@@ -398,12 +398,18 @@
           "refused": {
             "format": "int64",
             "type": "integer"
+          },
+          "valid": {
+            "description": "Lines a preview (dry_run) found importable.",
+            "format": "int64",
+            "type": "integer"
           }
         },
         "required": [
           "created",
           "existing",
           "refused",
+          "valid",
           "lines"
         ],
         "type": "object"
@@ -428,7 +434,8 @@
             "enum": [
               "created",
               "existing",
-              "refused"
+              "refused",
+              "valid"
             ],
             "type": "string"
           },
@@ -542,6 +549,10 @@
             "maxLength": 2000000,
             "type": "string"
           },
+          "dry_run": {
+            "description": "Check every line and report it as valid or refused, creating nothing.",
+            "type": "boolean"
+          },
           "format": {
             "description": "json reads stores or content as a JSON array; csv reads content with a header row (external_ref, name, legal_name, cnpj, city_ibge; comma or semicolon).",
             "enum": [
@@ -574,8 +585,13 @@
       "CDLStoreLine": {
         "additionalProperties": false,
         "properties": {
+          "city": {
+            "description": "The city by name, optionally with /UF, matched against the cities of the CDL; for a sender with no IBGE code.",
+            "maxLength": 120,
+            "type": "string"
+          },
           "city_ibge": {
-            "description": "Must be one of the cities of the CDL.",
+            "description": "Must be one of the cities of the CDL. A city name is accepted here too.",
             "type": "string"
           },
           "cnpj": {
