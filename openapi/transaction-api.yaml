@@ -1135,6 +1135,87 @@ components:
       required:
         - status
       type: object
+    ManualConfirmInputBody:
+      additionalProperties: false
+      properties:
+        amount:
+          description: Minor units received; must equal the payment amount.
+          format: int64
+          maximum: 9007199254740991
+          minimum: 1
+          type: integer
+        note:
+          maxLength: 500
+          type: string
+        reference:
+          description: "What identifies the money: the Pix end-to-end id, the receipt number."
+          maxLength: 200
+          minLength: 1
+          type: string
+      required:
+        - amount
+        - reference
+      type: object
+    ManualListOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/ManualPayment"
+          type:
+            - array
+            - "null"
+      required:
+        - items
+      type: object
+    ManualPayment:
+      additionalProperties: false
+      properties:
+        amount:
+          description: "Minor units: the exact amount a confirmation must state."
+          format: int64
+          type: integer
+        created_at:
+          format: date-time
+          type: string
+        currency:
+          type: string
+        deadline:
+          description: After this the stock is released and a confirmation is refused.
+          format: date-time
+          type: string
+        marketplace_order_id:
+          format: uuid
+          type: string
+        method:
+          enum:
+            - pix
+            - bank_transfer
+            - boleto
+            - arranged
+          type: string
+        payment_id:
+          format: uuid
+          type: string
+      required:
+        - payment_id
+        - marketplace_order_id
+        - method
+        - currency
+        - amount
+        - deadline
+        - created_at
+      type: object
+    ManualRejectInputBody:
+      additionalProperties: false
+      properties:
+        reason:
+          maxLength: 500
+          minLength: 3
+          type: string
+      required:
+        - reason
+      type: object
     MyPurchasesOutputBody:
       additionalProperties: false
       properties:
@@ -5092,6 +5173,71 @@ paths:
       x-sellvex-permission: tax.documents.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
+  /v1/stores/{store_id}/manual-payments:
+    get:
+      description: Manual payments of the store still waiting for someone to confirm the money arrived, soonest deadline first.
+      operationId: payments.manualPayments.list
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ManualListOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List manual payments to confirm
+      tags:
+        - payments
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 3
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: payments.payments.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
   /v1/stores/{store_id}/my-purchases:
     get:
       description: "What the authenticated buyer bought in this store, newest first, in every state. Cancelled and pending orders are included: \"where is my order\" is most often asked about those. The buyer comes from the token, never from the request."
@@ -5985,6 +6131,200 @@ paths:
       x-sellvex-max-database-queries: 8
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: payments.payments.capture
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/payments/{payment_id}/manual-confirmation:
+    post:
+      description: "Records that the money of a manual payment arrived, with the exact amount and a reference, and completes the order. Refused after the deadline, because the stock was released. A decision is final: a mistake is a refund. Requires an authentication in the last 15 minutes."
+      operationId: payments.manualPayments.confirm
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: payment_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualConfirmInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Confirm a manual payment
+      tags:
+        - payments
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 24
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: payments.manual_payments.confirm
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/payments/{payment_id}/manual-rejection:
+    post:
+      description: Records that the money of a manual payment did not arrive. The payment fails and the checkout releases the stock. Requires an authentication in the last 15 minutes.
+      operationId: payments.manualPayments.reject
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: payment_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualRejectInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Reject a manual payment
+      tags:
+        - payments
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 12
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: payments.manual_payments.confirm
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/payments/{payment_id}/refund:

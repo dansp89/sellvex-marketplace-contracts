@@ -1506,6 +1506,11 @@
           "type": "string"
         },
         {
+          "name": "provider",
+          "type": "string",
+          "optional": true
+        },
+        {
           "name": "currency",
           "type": "string"
         },
@@ -1552,6 +1557,11 @@
         {
           "name": "status",
           "type": "string"
+        },
+        {
+          "name": "provider",
+          "type": "string",
+          "optional": true
         },
         {
           "name": "currency",
@@ -1602,6 +1612,11 @@
           "type": "string"
         },
         {
+          "name": "provider",
+          "type": "string",
+          "optional": true
+        },
+        {
           "name": "currency",
           "type": "string"
         },
@@ -1650,6 +1665,11 @@
           "type": "string"
         },
         {
+          "name": "provider",
+          "type": "string",
+          "optional": true
+        },
+        {
           "name": "currency",
           "type": "string"
         },
@@ -1696,6 +1716,11 @@
         {
           "name": "status",
           "type": "string"
+        },
+        {
+          "name": "provider",
+          "type": "string",
+          "optional": true
         },
         {
           "name": "currency",
