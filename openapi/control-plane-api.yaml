@@ -1725,6 +1725,9 @@ components:
       properties:
         country:
           type: string
+        description:
+          description: O que o módulo faz, em português, para quem opera a loja ou a plataforma.
+          type: string
         id:
           type: string
         policies:
@@ -1751,6 +1754,9 @@ components:
             - optional
             - regional_pack
           type: string
+        title:
+          description: Nome curto do módulo, em português.
+          type: string
         unreleased:
           items:
             type: string
@@ -1761,6 +1767,8 @@ components:
           type: string
       required:
         - id
+        - title
+        - description
         - version
         - tier
         - requires
@@ -1934,6 +1942,9 @@ components:
     Permission:
       additionalProperties: false
       properties:
+        description:
+          description: O que a permissão permite, em português.
+          type: string
         levels:
           items:
             enum:
@@ -1947,9 +1958,14 @@ components:
         name:
           description: módulo.recurso.ação
           type: string
+        title:
+          description: "Rótulo em português: módulo, ação e recurso."
+          type: string
       required:
         - name
         - levels
+        - title
+        - description
       type: object
     PermissionsOutputBody:
       additionalProperties: false
@@ -2665,6 +2681,9 @@ components:
       properties:
         country:
           type: string
+        description:
+          description: O que o módulo faz, em português, para quem opera a loja ou a plataforma.
+          type: string
         id:
           type: string
         kill_switch:
@@ -2706,6 +2725,9 @@ components:
             - optional
             - regional_pack
           type: string
+        title:
+          description: Nome curto do módulo, em português.
+          type: string
         unreleased:
           items:
             type: string
@@ -2721,6 +2743,8 @@ components:
         - status
         - kill_switch
         - id
+        - title
+        - description
         - version
         - tier
         - requires
