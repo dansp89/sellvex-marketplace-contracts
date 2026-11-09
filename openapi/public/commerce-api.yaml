@@ -2805,6 +2805,56 @@ paths:
       x-sellvex-performance-class: public-read
       x-sellvex-replica-allowed: true
       x-sellvex-replica-max-lag-ms: 5000
+  /v1/marketplace/search:
+    get:
+      description: "Published products of every open store whose title has every word of q, best match first. Ranked, not paged: a buyer who needs more than 50 results refines the term."
+      operationId: listings.search.list
+      parameters:
+        - description: Words the title must contain; case and spacing do not matter.
+          explode: false
+          in: query
+          name: q
+          schema:
+            description: Words the title must contain; case and spacing do not matter.
+            maxLength: 100
+            minLength: 2
+            type: string
+        - description: How many results; 24 when absent.
+          explode: false
+          in: query
+          name: limit
+          schema:
+            description: How many results; 24 when absent.
+            format: int64
+            maximum: 50
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ListingPage"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: Search the whole marketplace
+      tags:
+        - listings
+      x-sellvex-cache-policy: shared
+      x-sellvex-latency-budget-p99-ms: 50
+      x-sellvex-max-database-queries: 1
+      x-sellvex-performance-class: public-read
+      x-sellvex-replica-allowed: true
+      x-sellvex-replica-max-lag-ms: 5000
   /v1/marketplace/stores/{store_id}/listings:
     get:
       description: One store's published products, newest first. A store that may not sell right now answers 409 stores.store_unavailable rather than an empty page.
