@@ -1737,6 +1737,56 @@
         ],
         "type": "object"
       },
+      "Listing": {
+        "additionalProperties": false,
+        "properties": {
+          "listed_at": {
+            "description": "When the product was first listed; an edit does not move it.",
+            "format": "date-time",
+            "type": "string"
+          },
+          "product_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "store_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "store_id",
+          "product_id",
+          "title",
+          "listed_at"
+        ],
+        "type": "object"
+      },
+      "ListingPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/Listing"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "next_cursor": {
+            "description": "Pass as cursor for the next page; absent on the last one.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "LivenessOutputBody": {
         "additionalProperties": false,
         "properties": {
@@ -4002,6 +4052,132 @@
         "tags": [
           "health"
         ]
+      }
+    },
+    "/v1/marketplace/listings": {
+      "get": {
+        "description": "Every open store's published products, newest first, for a visitor with no credential. Answered from the listing projection, never from the catalogue: it may lag a publication by a few seconds.",
+        "operationId": "listings.feed.list",
+        "parameters": [
+          {
+            "description": "Opaque cursor from the previous page.",
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "description": "Opaque cursor from the previous page.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Page size; 24 when absent.",
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "description": "Page size; 24 when absent.",
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingPage"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Browse the whole marketplace",
+        "tags": [
+          "listings"
+        ],
+        "x-sellvex-cache-policy": "shared",
+        "x-sellvex-latency-budget-p99-ms": 50,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "public-read",
+        "x-sellvex-replica-allowed": true,
+        "x-sellvex-replica-max-lag-ms": 5000
+      }
+    },
+    "/v1/marketplace/stores/{store_id}/listings": {
+      "get": {
+        "description": "One store's published products, newest first. A store that may not sell right now answers 409 stores.store_unavailable rather than an empty page.",
+        "operationId": "listings.shelves.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListingPage"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Browse one store in the marketplace",
+        "tags": [
+          "listings"
+        ],
+        "x-sellvex-cache-policy": "shared",
+        "x-sellvex-latency-budget-p99-ms": 50,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "public-read",
+        "x-sellvex-replica-allowed": true,
+        "x-sellvex-replica-max-lag-ms": 5000
       }
     },
     "/v1/storefronts": {
