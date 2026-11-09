@@ -177,6 +177,48 @@ components:
         - hold_days
         - active
       type: object
+    AffiliateStatement:
+      additionalProperties: false
+      properties:
+        lines:
+          items:
+            $ref: "#/components/schemas/AffiliateStatementLine"
+          type:
+            - array
+            - "null"
+        member_id:
+          format: uuid
+          type: string
+      required:
+        - member_id
+        - lines
+      type: object
+    AffiliateStatementLine:
+      additionalProperties: false
+      properties:
+        amount:
+          description: Sum of the commissions, in minor units.
+          format: int64
+          type: integer
+        currency:
+          type: string
+        sales:
+          description: How many sales.
+          format: int64
+          type: integer
+        status:
+          enum:
+            - pending
+            - approved
+            - cancelled
+            - reversed
+          type: string
+      required:
+        - status
+        - currency
+        - sales
+        - amount
+      type: object
     Applied:
       additionalProperties: false
       properties:
@@ -3389,6 +3431,77 @@ paths:
       x-sellvex-max-database-queries: 4
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: affiliates.programmes.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/affiliate-members/{member_id}/statement:
+    get:
+      description: "What one of the store's affiliates earned, by status and currency: approved is what the store owes them. Paying it is the store's or its payment gateway's: the platform does not hold third parties' money (DEC-FIN-001)."
+      operationId: affiliates.commissions.statement
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateStatement"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Statement of one affiliate
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: affiliates.commissions.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/affiliate-programmes:

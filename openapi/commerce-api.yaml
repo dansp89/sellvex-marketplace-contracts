@@ -25,6 +25,29 @@ components:
       required:
         - account_reference
       type: object
+    AddPlatformCodeInputBody:
+      additionalProperties: false
+      properties:
+        code:
+          maxLength: 32
+          minLength: 4
+          type: string
+      required:
+        - code
+      type: object
+    AddPlatformMemberInputBody:
+      additionalProperties: false
+      properties:
+        account_reference:
+          maxLength: 200
+          minLength: 1
+          type: string
+        display_name:
+          maxLength: 120
+          type: string
+      required:
+        - account_reference
+      type: object
     AdjustInputBody:
       additionalProperties: false
       properties:
@@ -176,6 +199,69 @@ components:
         - attribution
         - hold_days
         - active
+      type: object
+    AffiliateReferral:
+      additionalProperties: false
+      properties:
+        member_id:
+          format: uuid
+          type: string
+        programme_id:
+          format: uuid
+          type: string
+        referred_at:
+          format: date-time
+          type: string
+        store_id:
+          format: uuid
+          type: string
+      required:
+        - store_id
+        - programme_id
+        - member_id
+        - referred_at
+      type: object
+    AffiliateStatement:
+      additionalProperties: false
+      properties:
+        lines:
+          items:
+            $ref: "#/components/schemas/AffiliateStatementLine"
+          type:
+            - array
+            - "null"
+        member_id:
+          format: uuid
+          type: string
+      required:
+        - member_id
+        - lines
+      type: object
+    AffiliateStatementLine:
+      additionalProperties: false
+      properties:
+        amount:
+          description: Sum of the commissions, in minor units.
+          format: int64
+          type: integer
+        currency:
+          type: string
+        sales:
+          description: How many sales.
+          format: int64
+          type: integer
+        status:
+          enum:
+            - pending
+            - approved
+            - cancelled
+            - reversed
+          type: string
+      required:
+        - status
+        - currency
+        - sales
+        - amount
       type: object
     Applied:
       additionalProperties: false
@@ -1032,6 +1118,51 @@ components:
           type: string
       required:
         - currency
+      type: object
+    CreatePlatformProgrammeInputBody:
+      additionalProperties: false
+      properties:
+        attribution:
+          enum:
+            - first_touch
+            - last_touch
+          type: string
+        cap_amount:
+          format: int64
+          minimum: 1
+          type: integer
+        hold_days:
+          format: int64
+          maximum: 120
+          minimum: 0
+          type: integer
+        kind:
+          enum:
+            - marketplace
+            - seller_referral
+          type: string
+        name:
+          maxLength: 120
+          minLength: 3
+          type: string
+        rate_basis_points:
+          format: int64
+          maximum: 5000
+          minimum: 1
+          type: integer
+        window_days:
+          description: Up to 90 for marketplace; up to 365 for seller_referral, where it is how long the merchant's sales pay.
+          format: int64
+          maximum: 365
+          minimum: 1
+          type: integer
+      required:
+        - kind
+        - name
+        - rate_basis_points
+        - window_days
+        - attribution
+        - hold_days
       type: object
     CreateProgrammeInputBody:
       additionalProperties: false
@@ -3282,6 +3413,464 @@ paths:
       x-sellvex-performance-class: public-read
       x-sellvex-replica-allowed: true
       x-sellvex-replica-max-lag-ms: 5000
+  /v1/platform/affiliate-members/{member_id}/codes:
+    post:
+      description: A code valid on every store, for the marketplace programme.
+      operationId: affiliates.platformProgrammes.addCode
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddPlatformCodeInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateCode"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Give a platform affiliate a code
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 4
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: affiliates.programmes.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/platform/affiliate-members/{member_id}/referrals/{store_id}:
+    post:
+      description: "Under a seller_referral programme, the affiliate earns on this store's sales for the programme's window. A store is referred once: the first referral is the one paid."
+      operationId: affiliates.platformProgrammes.referStore
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - description: The merchant this affiliate brought.
+          in: path
+          name: store_id
+          required: true
+          schema:
+            description: The merchant this affiliate brought.
+            format: uuid
+            type: string
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateReferral"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Record a merchant an affiliate brought
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 5
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: affiliates.programmes.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/platform/affiliate-members/{member_id}/statement:
+    get:
+      description: What a platform affiliate earned across every store, by status and currency.
+      operationId: affiliates.platformCommissions.statement
+      parameters:
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateStatement"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Statement of a platform affiliate
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: affiliates.commissions.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/platform/affiliate-programmes:
+    get:
+      description: The platform's own programmes, newest first.
+      operationId: affiliates.platformProgrammes.list
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProgrammesOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List platform affiliate programmes
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 1
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: affiliates.programmes.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+    post:
+      description: "A programme the platform pays: marketplace (buyers sent to any store, no product of its own) or seller_referral (merchants brought to the platform, paid on their sales for the window)."
+      operationId: affiliates.platformProgrammes.create
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePlatformProgrammeInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateProgramme"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Create a platform affiliate programme
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 3
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: affiliates.programmes.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/platform/affiliate-programmes/{programme_id}/members:
+    post:
+      description: Adds an affiliate to a platform programme; enrolling the same account again returns the same affiliate.
+      operationId: affiliates.platformProgrammes.addMember
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: programme_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AddPlatformMemberInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateMember"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Enrol a platform affiliate
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 4
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: affiliates.programmes.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
   /v1/storefronts:
     get:
       description: "Every shop open to buyers, newest first, for a visitor with no credential. A shop that is provisioning, paused by its merchant or suspended by the platform is absent: sending a buyer to one would show them a shop that refuses the first thing they try."
@@ -3779,6 +4368,77 @@ paths:
       x-sellvex-max-database-queries: 4
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: affiliates.programmes.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/affiliate-members/{member_id}/statement:
+    get:
+      description: "What one of the store's affiliates earned, by status and currency: approved is what the store owes them. Paying it is the store's or its payment gateway's: the platform does not hold third parties' money (DEC-FIN-001)."
+      operationId: affiliates.commissions.statement
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: member_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AffiliateStatement"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Statement of one affiliate
+      tags:
+        - affiliates
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: affiliates.commissions.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/affiliate-programmes:
