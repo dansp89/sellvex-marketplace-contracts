@@ -1,0 +1,55 @@
+#!/bin/sh
+# Varredura de segredos antes de cada commit (plano de execução, item 0.3).
+#
+# Recusa o commit quando o que foi preparado (git add) traz:
+#   - arquivo .env de verdade (o modelo .env.example passa);
+#   - dump de banco, chave privada ou pasta node_modules;
+#   - token conhecido (GitHub, Anthropic, OpenAI, AWS, Google, Slack,
+#     Stripe, Mercado Pago) ou senha dentro de uma URL de conexão.
+#
+# Uma linha que precisa mesmo de um valor parecido (teste, exemplo) leva
+# o comentário "secretscan:allow" e passa. Ativar num clone novo:
+#   git config core.hooksPath .githooks
+set -eu
+
+fail=0
+say() { printf 'secretscan: %s\n' "$1" >&2; fail=1; }
+
+files=$(git diff --cached --name-only --diff-filter=ACMR)
+for f in $files; do
+	case "$f" in
+	*.env.example | *.env.sample | *.env.template) ;;
+	.env | */.env | .env.* | */.env.*) say "arquivo de ambiente preparado: $f" ;;
+	*node_modules/*) say "node_modules preparado: $f" ;;
+	*.dump | *.sql.gz | *.pgdump | *.bak) say "possível dump de banco: $f" ;;
+	*.pem | *.key | *.p12 | *.pfx | id_rsa | */id_rsa | id_ed25519 | */id_ed25519) say "chave preparada: $f" ;;
+	esac
+done
+
+# Só as linhas adicionadas, sem as marcadas como permitidas.
+added=$(git diff --cached -U0 --diff-filter=ACMR | grep '^+' | grep -v '^+++' | grep -v 'secretscan:allow' || true)
+if [ -n "$added" ]; then
+	patterns='-----BEGIN [A-Z ]*PRIVATE KEY-----
+gh[pousr]_[A-Za-z0-9]{36}
+github_pat_[A-Za-z0-9_]{60,}
+sk-ant-[A-Za-z0-9_-]{20,}
+sk-(proj-)?[A-Za-z0-9]{32,}
+AKIA[0-9A-Z]{16}
+AIza[0-9A-Za-z_-]{35}
+xox[baprs]-[A-Za-z0-9-]{10,}
+sk_live_[A-Za-z0-9]{20,}
+APP_USR-[0-9]{6,}-[0-9]{6}-[a-f0-9]{32}
+[a-z][a-z0-9+.-]*://[^[:space:]:/@]+:[^[:space:]:/@$]{8,}@'
+	echo "$patterns" | while IFS= read -r p; do
+		hit=$(printf '%s\n' "$added" | grep -E -m1 -- "$p" || true)
+		if [ -n "$hit" ]; then
+			printf 'secretscan: valor parecido com segredo (%s)\n' "$p" >&2
+			exit 3
+		fi
+	done || fail=1
+fi
+
+if [ "$fail" -ne 0 ]; then
+	printf 'secretscan: commit recusado. Tire o arquivo/valor ou marque a linha com "secretscan:allow".\n' >&2
+	exit 1
+fi
