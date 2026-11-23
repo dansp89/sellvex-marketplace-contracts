@@ -2126,6 +2126,76 @@ components:
         - status
         - checks
       type: object
+    RecipientAddress:
+      additionalProperties: false
+      properties:
+        country:
+          description: ISO 3166-1 alpha-2.
+          maxLength: 2
+          minLength: 2
+          type: string
+        latitude:
+          description: Optional; with it the distance of a local delivery is measured instead of estimated.
+          format: double
+          maximum: 90
+          minimum: -90
+          type: number
+        line1:
+          maxLength: 200
+          minLength: 1
+          type: string
+        line2:
+          maxLength: 200
+          type: string
+        locality:
+          maxLength: 200
+          minLength: 1
+          type: string
+        longitude:
+          format: double
+          maximum: 180
+          minimum: -180
+          type: number
+        postal_code:
+          maxLength: 20
+          minLength: 1
+          type: string
+        recipient:
+          maxLength: 200
+          type: string
+        region:
+          maxLength: 200
+          type: string
+      required:
+        - country
+        - postal_code
+        - locality
+        - line1
+      type: object
+    RecipientContact:
+      additionalProperties: false
+      properties:
+        email:
+          maxLength: 254
+          type: string
+        name:
+          maxLength: 200
+          type: string
+        phone:
+          description: 8 to 15 digits, optional leading +; spaces, dashes and parentheses are ignored.
+          maxLength: 30
+          type: string
+      type: object
+    RecipientDelivery:
+      additionalProperties: false
+      properties:
+        address:
+          $ref: "#/components/schemas/RecipientAddress"
+        contact:
+          $ref: "#/components/schemas/RecipientContact"
+      required:
+        - contact
+      type: object
     RejectInputBody:
       additionalProperties: false
       properties:
@@ -2310,8 +2380,12 @@ components:
     StorefrontCart:
       additionalProperties: false
       properties:
+        coupon_code:
+          type: string
         currency:
           type: string
+        delivery:
+          $ref: "#/components/schemas/RecipientDelivery"
         discount_amount:
           format: int64
           type: integer
@@ -2416,6 +2490,16 @@ components:
         - name
         - slug
         - position
+      type: object
+    StorefrontCouponInputBody:
+      additionalProperties: false
+      properties:
+        code:
+          description: Empty removes the coupon.
+          maxLength: 40
+          type: string
+      required:
+        - code
       type: object
     StorefrontImage:
       additionalProperties: false
@@ -3049,6 +3133,178 @@ paths:
       x-sellvex-latency-budget-p99-ms: 150
       x-sellvex-max-database-queries: 3
       x-sellvex-performance-class: tenant-read
+      x-sellvex-replica-allowed: false
+  /v1/storefronts/{store_id}/carts/{cart_id}/claim:
+    post:
+      description: Binds an anonymous cart to the signed-in buyer, so the order the checkout places is theirs and appears in their purchases. The buyer comes from the token. A cart already bound to another buyer is refused with 409 carts.cart_claimed; binding it again to the same buyer changes nothing.
+      operationId: carts.carts.claim
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: cart_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "204":
+          description: No Content
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Make a cart mine
+      tags:
+        - carts
+      x-sellvex-actor-types:
+        - customer
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: carts.mine.use
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/storefronts/{store_id}/carts/{cart_id}/coupon:
+    put:
+      description: Records the code on the cart. What it is worth is decided by the store's promotions on every read, so the answer shows the discount it gives now. An empty code removes it.
+      operationId: storefront.cartCoupon.set
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: cart_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StorefrontCouponInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorefrontCart"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: Present a coupon
+      tags:
+        - storefront
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-replica-allowed: false
+  /v1/storefronts/{store_id}/carts/{cart_id}/delivery:
+    put:
+      description: The delivery address and how to reach the buyer. The checkout copies both into the order, so the store ships without asking again. Setting it twice replaces it.
+      operationId: storefront.cartDelivery.set
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: cart_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecipientDelivery"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorefrontCart"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: Say where the cart goes
+      tags:
+        - storefront
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
       x-sellvex-replica-allowed: false
   /v1/storefronts/{store_id}/carts/{cart_id}/items/{variant_id}:
     put:

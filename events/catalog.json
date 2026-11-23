@@ -639,6 +639,102 @@
     },
     {
       "module": "dispatch",
+      "type": "offer.made",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.offer.made.v1",
+      "payload": [
+        {
+          "name": "offer_id",
+          "type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "net_amount",
+          "type": "integer"
+        },
+        {
+          "name": "distance_meters",
+          "type": "integer"
+        },
+        {
+          "name": "locality",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp"
+        }
+      ]
+    },
+    {
+      "module": "dispatch",
+      "type": "period.closed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.period.closed.v1",
+      "payload": [
+        {
+          "name": "closing_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "regime_id",
+          "type": "string"
+        },
+        {
+          "name": "regime_version",
+          "type": "integer"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "period_start",
+          "type": "timestamp"
+        },
+        {
+          "name": "period_end",
+          "type": "timestamp"
+        },
+        {
+          "name": "payer",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "dispatch",
       "type": "ride.completed",
       "version": 1,
       "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.ride.completed.v1",
@@ -1983,6 +2079,42 @@
         {
           "name": "operation_amount",
           "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "payouts",
+      "type": "courier.paid",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.payouts.courier.paid.v1",
+      "payload": [
+        {
+          "name": "payout_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "amount",
+          "type": "integer"
+        },
+        {
+          "name": "reference",
+          "type": "string"
+        },
+        {
+          "name": "paid_at",
+          "type": "timestamp"
         }
       ]
     },
