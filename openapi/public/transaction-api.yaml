@@ -235,6 +235,68 @@ components:
       required:
         - items
       type: object
+    CourierFleet:
+      additionalProperties: false
+      properties:
+        created_at:
+          format: date-time
+          type: string
+        id:
+          format: uuid
+          type: string
+        name:
+          type: string
+        organization_id:
+          format: uuid
+          type: string
+        regime_id:
+          type: string
+        store_id:
+          format: uuid
+          type: string
+        visibility:
+          enum:
+            - private
+            - shared
+            - cdl
+            - open
+          type: string
+      required:
+        - id
+        - name
+        - organization_id
+        - visibility
+        - regime_id
+        - created_at
+      type: object
+    CourierMembership:
+      additionalProperties: false
+      properties:
+        fleet_id:
+          format: uuid
+          type: string
+        fleet_name:
+          type: string
+        regime_id:
+          type: string
+        status:
+          enum:
+            - pending
+            - active
+            - removed
+          type: string
+        store_id:
+          format: uuid
+          type: string
+        visibility:
+          type: string
+      required:
+        - fleet_id
+        - fleet_name
+        - visibility
+        - regime_id
+        - status
+      type: object
     Credential:
       additionalProperties: false
       properties:
@@ -292,6 +354,57 @@ components:
       required:
         - items
       type: object
+    CustodyEntry:
+      additionalProperties: false
+      properties:
+        actor_id:
+          type: string
+        from_id:
+          type: string
+        from_kind:
+          type: string
+        id:
+          format: int64
+          type: integer
+        kind:
+          enum:
+            - labelled
+            - collected
+            - delivered
+            - attempt_failed
+            - return_started
+            - returned_to_store
+            - retry_scheduled
+          type: string
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        note:
+          type: string
+        occurred_at:
+          format: date-time
+          type: string
+        recorded_at:
+          format: date-time
+          type: string
+        to_id:
+          type: string
+        to_kind:
+          type: string
+      required:
+        - id
+        - kind
+        - from_kind
+        - from_id
+        - to_kind
+        - to_id
+        - actor_id
+        - occurred_at
+        - recorded_at
+      type: object
     DecideInputBody:
       additionalProperties: false
       properties:
@@ -303,6 +416,301 @@ components:
           type: string
       required:
         - approve
+      type: object
+    DeliveryAddress:
+      additionalProperties: false
+      properties:
+        country:
+          type: string
+        line1:
+          type: string
+        line2:
+          type: string
+        locality:
+          type: string
+        postal_code:
+          type: string
+        recipient:
+          type: string
+        region:
+          type: string
+      required:
+        - country
+        - postal_code
+        - locality
+        - line1
+      type: object
+    DeliveryOffer:
+      additionalProperties: false
+      properties:
+        answered_at:
+          format: date-time
+          type: string
+        courier_id:
+          format: uuid
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        currency:
+          type: string
+        distance_meters:
+          format: int64
+          type: integer
+        expires_at:
+          format: date-time
+          type: string
+        fare_amount:
+          description: What the ride pays before the platform's fee.
+          format: int64
+          type: integer
+        fee_amount:
+          description: The platform's fee under the regime.
+          format: int64
+          type: integer
+        fleet_id:
+          format: uuid
+          type: string
+        id:
+          format: uuid
+          type: string
+        net_amount:
+          description: What reaches the courier.
+          format: int64
+          type: integer
+        regime_id:
+          type: string
+        regime_version:
+          format: int64
+          type: integer
+        stage:
+          enum:
+            - private
+            - cdl
+            - open
+          type: string
+        status:
+          enum:
+            - open
+            - accepted
+            - refused
+            - expired
+            - withdrawn
+          type: string
+        task_id:
+          format: uuid
+          type: string
+      required:
+        - id
+        - task_id
+        - courier_id
+        - fleet_id
+        - stage
+        - regime_id
+        - regime_version
+        - currency
+        - fare_amount
+        - fee_amount
+        - net_amount
+        - distance_meters
+        - status
+        - expires_at
+        - created_at
+      type: object
+    DeliveryProof:
+      additionalProperties: false
+      properties:
+        at:
+          format: date-time
+          type: string
+        code_matched:
+          type: boolean
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        photo_media_id:
+          format: uuid
+          type: string
+      required:
+        - code_matched
+        - at
+      type: object
+    DeliveryTask:
+      additionalProperties: false
+      properties:
+        attempts:
+          format: int64
+          type: integer
+        cascade:
+          items:
+            type: string
+          type:
+            - array
+            - "null"
+        courier_id:
+          format: uuid
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        currency:
+          type: string
+        delivery_code:
+          description: The four digits the buyer tells the courier. Shown to the store; never to the courier.
+          type: string
+        destination:
+          $ref: "#/components/schemas/DeliveryAddress"
+        distance_meters:
+          format: int64
+          type: integer
+        failure_reason:
+          type: string
+        fare_amount:
+          format: int64
+          type: integer
+        fee_amount:
+          format: int64
+          type: integer
+        fleet_id:
+          format: uuid
+          type: string
+        id:
+          format: uuid
+          type: string
+        offers:
+          items:
+            $ref: "#/components/schemas/DeliveryOffer"
+          type:
+            - array
+            - "null"
+        payer:
+          type: string
+        peak:
+          type: boolean
+        proof:
+          $ref: "#/components/schemas/DeliveryProof"
+        regime_id:
+          type: string
+        regime_version:
+          format: int64
+          type: integer
+        route_seq:
+          description: Position in the courier's route, from 1.
+          format: int64
+          type: integer
+        seller_order_id:
+          format: uuid
+          type: string
+        shipment_id:
+          format: uuid
+          type: string
+        stage:
+          type: string
+        status:
+          enum:
+            - awaiting_ready
+            - offering
+            - assigned
+            - in_route
+            - attempt_failed
+            - returning
+            - delivered
+            - returned
+            - escalated
+            - cancelled
+          type: string
+        store_id:
+          format: uuid
+          type: string
+        tracking_code:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+        volumes:
+          items:
+            $ref: "#/components/schemas/DeliveryVolume"
+          type:
+            - array
+            - "null"
+        window_end:
+          format: date-time
+          type: string
+        window_start:
+          format: date-time
+          type: string
+      required:
+        - id
+        - store_id
+        - shipment_id
+        - seller_order_id
+        - tracking_code
+        - destination
+        - distance_meters
+        - peak
+        - status
+        - cascade
+        - currency
+        - fare_amount
+        - fee_amount
+        - attempts
+        - volumes
+        - created_at
+        - updated_at
+      type: object
+    DeliveryVolume:
+      additionalProperties: false
+      properties:
+        holder_id:
+          type: string
+        holder_kind:
+          enum:
+            - store
+            - courier
+            - recipient
+          type: string
+        id:
+          format: uuid
+          type: string
+        qr:
+          description: "The signed code printed on the volume's label. Shown to the store, never to a courier: the courier reads it off the parcel."
+          type: string
+        seq:
+          format: int64
+          type: integer
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - seq
+        - holder_kind
+        - holder_id
+        - updated_at
+      type: object
+    DetailsInputBody:
+      additionalProperties: false
+      properties:
+        distance_meters:
+          description: For regimes paid by the kilometre or by distance band.
+          format: int64
+          maximum: 500000
+          minimum: 0
+          type: integer
+        peak:
+          description: A peak-hour ride, which pays the regime's peak bonus.
+          type: boolean
+        window_end:
+          format: date-time
+          type: string
+        window_start:
+          format: date-time
+          type: string
+      required:
+        - distance_meters
       type: object
     DownloadOutputBody:
       additionalProperties: false
@@ -405,6 +813,53 @@ components:
         - currency
         - total_amount
         - created_at
+      type: object
+    FleetsOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/CourierFleet"
+          type:
+            - array
+            - "null"
+      required:
+        - items
+      type: object
+    FulfillmentChange:
+      additionalProperties: false
+      properties:
+        actor_id:
+          type: string
+        from:
+          type: string
+        occurred_at:
+          format: date-time
+          type: string
+        reason:
+          type: string
+        to:
+          type: string
+      required:
+        - from
+        - to
+        - actor_id
+        - occurred_at
+      type: object
+    FulfillmentInputBody:
+      additionalProperties: false
+      properties:
+        reason:
+          maxLength: 500
+          type: string
+        status:
+          description: Only these two are the store's to say; the rest comes from the carrier's tracking.
+          enum:
+            - preparing
+            - ready_for_pickup
+          type: string
+      required:
+        - status
       type: object
     Item:
       additionalProperties: false
@@ -650,6 +1105,14 @@ components:
       required:
         - reason
       type: object
+    MemberBody:
+      additionalProperties: false
+      properties:
+        regime_id:
+          description: The courier's regime in this fleet; the fleet's own when absent.
+          maxLength: 64
+          type: string
+      type: object
     MyPurchasesOutputBody:
       additionalProperties: false
       properties:
@@ -728,6 +1191,36 @@ components:
         - amount
         - status
         - created_at
+      type: object
+    OrderFulfillment:
+      additionalProperties: false
+      properties:
+        history:
+          items:
+            $ref: "#/components/schemas/FulfillmentChange"
+          type:
+            - array
+            - "null"
+        seller_order_id:
+          format: uuid
+          type: string
+        status:
+          enum:
+            - unfulfilled
+            - preparing
+            - ready_for_pickup
+            - dispatched
+            - delivered
+            - delivery_failed
+            - returned
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - seller_order_id
+        - status
+        - history
       type: object
     Package:
       additionalProperties: false
@@ -1322,8 +1815,10 @@ components:
           enum:
             - created
             - in_transit
+            - attempt_failed
             - delivered
             - failed
+            - returned
             - cancelled
           type: string
         store_id:
@@ -1495,6 +1990,40 @@ components:
         - outcome
         - occurred_at
       type: object
+    StoreFleetInputBody:
+      additionalProperties: false
+      properties:
+        name:
+          maxLength: 120
+          minLength: 2
+          type: string
+        regime_id:
+          maxLength: 64
+          minLength: 2
+          type: string
+        visibility:
+          description: A store's fleet is private or shared; a fleet of the network is cdl or open.
+          enum:
+            - private
+            - shared
+            - cdl
+            - open
+          type: string
+      required:
+        - name
+        - visibility
+        - regime_id
+      type: object
+    StoreScanInputBody:
+      additionalProperties: false
+      properties:
+        qr:
+          maxLength: 200
+          minLength: 10
+          type: string
+      required:
+        - qr
+      type: object
     StorefrontCheckout:
       additionalProperties: false
       properties:
@@ -1530,6 +2059,20 @@ components:
       required:
         - cart_id
         - payment_method_token
+      type: object
+    TasksOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/DeliveryTask"
+          type:
+            - array
+            - "null"
+        next_cursor:
+          type: string
+      required:
+        - items
       type: object
     TrackingEvent:
       additionalProperties: false
@@ -1573,6 +2116,37 @@ components:
         - to
         - actor_id
         - occurred_at
+      type: object
+    VolumeCustody:
+      additionalProperties: false
+      properties:
+        holder_id:
+          type: string
+        holder_kind:
+          description: "Who is responsible for the volume now: if it is lost, it was lost with them."
+          type: string
+        holder_since:
+          format: date-time
+          type: string
+        task_id:
+          format: uuid
+          type: string
+        trail:
+          items:
+            $ref: "#/components/schemas/CustodyEntry"
+          type:
+            - array
+            - "null"
+        volume_id:
+          format: uuid
+          type: string
+      required:
+        - volume_id
+        - task_id
+        - holder_kind
+        - holder_id
+        - holder_since
+        - trail
       type: object
   securitySchemes:
     bearer:
@@ -2024,6 +2598,971 @@ paths:
       x-sellvex-max-database-queries: 12
       x-sellvex-performance-class: checkout
       x-sellvex-permission: checkout.checkouts.create
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/courier-fleets:
+    get:
+      operationId: couriers.storeFleets.list
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FleetsOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List the fleets of the store
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: couriers.fleets.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+    post:
+      description: A private fleet delivers for the store alone; a shared one for the store first and, in its free time, for the network.
+      operationId: couriers.storeFleets.create
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoreFleetInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierFleet"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Create a fleet of the store
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 6
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.fleets.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/courier-fleets/{fleet_id}/members/{courier_id}:
+    put:
+      description: The store's own courier, by the id their app shows. They still need the network's approval before they go online.
+      operationId: couriers.storeMembers.put
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: fleet_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: courier_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MemberBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierMembership"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Put a courier in a fleet of the store
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.fleets.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-labels:
+    get:
+      description: One label per volume, with its signed QR code, the recipient, the window and the order code. PDF A4 (eight per sheet), PDF 10x15 for thermal printers, or ZPL for Zebra.
+      operationId: dispatch.labels.print
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - description: The deliveries whose labels to print, one label per volume.
+          explode: false
+          in: query
+          name: task_id
+          schema:
+            description: The deliveries whose labels to print, one label per volume.
+            items:
+              type: string
+            maxItems: 100
+            minItems: 1
+            type:
+              - array
+              - "null"
+        - explode: false
+          in: query
+          name: format
+          schema:
+            default: pdf_a4
+            enum:
+              - pdf_a4
+              - pdf_10x15
+              - zpl
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                contentEncoding: base64
+                type: string
+          description: OK
+          headers:
+            Content-Disposition:
+              schema:
+                type: string
+            Content-Type:
+              schema:
+                type: string
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Print labels
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 250
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.labels.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-scans:
+    post:
+      description: "The store reads the QR of a volume coming back: it passes from the courier to the store, and the return closes once every volume is in."
+      operationId: dispatch.receipts.create
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StoreScanInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryTask"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Read a returning volume in
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 12
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: dispatch.tasks.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-tasks:
+    get:
+      description: The store's local deliveries, newest first, without volumes.
+      operationId: dispatch.tasks.list
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - awaiting_ready
+              - offering
+              - assigned
+              - in_route
+              - attempt_failed
+              - returning
+              - delivered
+              - returned
+              - escalated
+              - cancelled
+              - ""
+            type: string
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            maxLength: 512
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            maximum: 200
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TasksOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List local deliveries
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 3
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.tasks.read
+      x-sellvex-reads:
+        - personal
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-tasks/{task_id}:
+    get:
+      description: With its volumes and their signed codes, every offer the cascade made, and the delivery code the store passes to the buyer.
+      operationId: dispatch.tasks.get
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryTask"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Get a local delivery
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 5
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.tasks.read
+      x-sellvex-reads:
+        - personal
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-tasks/{task_id}/details:
+    post:
+      description: "Before a courier takes it: the fare of each offer is computed from the distance, and the window is printed on the label."
+      operationId: dispatch.tasks.details
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DetailsInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryTask"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Set distance and window of a delivery
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: dispatch.tasks.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-tasks/{task_id}/retry:
+    post:
+      description: "After a failed attempt: the same courier goes again with the volumes they hold."
+      operationId: dispatch.tasks.retry
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryTask"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Try the delivery again
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 10
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: dispatch.tasks.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-tasks/{task_id}/return:
+    post:
+      description: "After a failed attempt: the courier brings the volumes back, still responsible for them until the store reads each one in."
+      operationId: dispatch.tasks.return
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeliveryTask"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Bring the volumes back
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 12
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: dispatch.tasks.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-volumes/{volume_id}/custody:
+    get:
+      description: "Who holds the volume now, and every passage of hands before. Append-only: a lost volume is found by its last entry."
+      operationId: dispatch.custody.get
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: volume_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VolumeCustody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Get the chain of custody of a volume
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 3
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.custody.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/fiscal-documents:
@@ -2555,6 +4094,173 @@ paths:
       x-sellvex-max-database-queries: 20
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: orders.orders.cancel
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/orders/{order_id}/fulfillment:
+    get:
+      description: Where the goods of the order are, with every change and who made it. dispatched, delivered, delivery_failed and returned come from the shipment's tracking, whatever carried it.
+      operationId: orders.fulfillment.get
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: order_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderFulfillment"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Get order fulfillment
+      tags:
+        - orders
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 6
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: orders.fulfillment.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+    post:
+      description: The store says the goods are being prepared or are ready for pickup. Ready is what starts a local delivery's offer to couriers. Only a placed order is fulfilled.
+      operationId: orders.fulfillment.update
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: order_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FulfillmentInputBody"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderFulfillment"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Mark order preparing or ready
+      tags:
+        - orders
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 12
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: orders.fulfillment.write
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/payment-providers/credentials:

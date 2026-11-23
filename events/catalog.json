@@ -593,6 +593,183 @@
       ]
     },
     {
+      "module": "couriers",
+      "type": "courier.reviewed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.couriers.courier.reviewed.v1",
+      "payload": [
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
+        }
+      ]
+    },
+    {
+      "module": "couriers",
+      "type": "document.expired",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.couriers.document.expired.v1",
+      "payload": [
+        {
+          "name": "document_id",
+          "type": "uuid"
+        },
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "kind",
+          "type": "string"
+        },
+        {
+          "name": "expired_on",
+          "type": "timestamp"
+        }
+      ]
+    },
+    {
+      "module": "dispatch",
+      "type": "ride.completed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.ride.completed.v1",
+      "payload": [
+        {
+          "name": "ride_id",
+          "type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "fleet_id",
+          "type": "uuid"
+        },
+        {
+          "name": "regime_id",
+          "type": "string"
+        },
+        {
+          "name": "regime_version",
+          "type": "integer"
+        },
+        {
+          "name": "payer",
+          "type": "string"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "gross_amount",
+          "type": "integer"
+        },
+        {
+          "name": "fee_amount",
+          "type": "integer"
+        },
+        {
+          "name": "net_amount",
+          "type": "integer"
+        },
+        {
+          "name": "completed_at",
+          "type": "timestamp"
+        }
+      ]
+    },
+    {
+      "module": "dispatch",
+      "type": "task.escalated",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.task.escalated.v1",
+      "payload": [
+        {
+          "name": "task_id",
+          "type": "uuid"
+        },
+        {
+          "name": "shipment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        }
+      ]
+    },
+    {
+      "module": "dispatch",
+      "type": "task.progressed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.task.progressed.v1",
+      "payload": [
+        {
+          "name": "task_id",
+          "type": "uuid"
+        },
+        {
+          "name": "shipment_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "organization_id",
+          "type": "uuid"
+        },
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "description",
+          "type": "string"
+        },
+        {
+          "name": "ref",
+          "type": "string"
+        },
+        {
+          "name": "occurred_at",
+          "type": "timestamp"
+        }
+      ]
+    },
+    {
       "module": "identity",
       "type": "impersonation.started",
       "version": 1,
@@ -1346,6 +1523,39 @@
         {
           "name": "attempts",
           "type": "integer"
+        }
+      ]
+    },
+    {
+      "module": "orders",
+      "type": "fulfillment.changed",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.orders.fulfillment.changed.v1",
+      "payload": [
+        {
+          "name": "seller_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "marketplace_order_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "from",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "optional": true
         }
       ]
     },

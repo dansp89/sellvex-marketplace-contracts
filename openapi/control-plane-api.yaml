@@ -5024,6 +5024,7 @@ paths:
       x-sellvex-actor-types:
         - platform_operator
         - store_member
+        - courier
       x-sellvex-cache-policy: private
       x-sellvex-latency-budget-p99-ms: 150
       x-sellvex-max-database-queries: 2
@@ -5086,6 +5087,7 @@ paths:
       x-sellvex-actor-types:
         - platform_operator
         - store_member
+        - courier
       x-sellvex-cache-policy: none
       x-sellvex-latency-budget-p99-ms: 300
       x-sellvex-max-database-queries: 4
@@ -5149,6 +5151,7 @@ paths:
       x-sellvex-actor-types:
         - platform_operator
         - store_member
+        - courier
       x-sellvex-cache-policy: none
       x-sellvex-latency-budget-p99-ms: 300
       x-sellvex-max-database-queries: 6
@@ -5239,6 +5242,7 @@ paths:
       x-sellvex-actor-types:
         - platform_operator
         - store_member
+        - courier
       x-sellvex-cache-policy: none
       x-sellvex-latency-budget-p99-ms: 300
       x-sellvex-max-database-queries: 4
