@@ -115,6 +115,17 @@
         ],
         "type": "object"
       },
+      "AnswerInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "occurred_at": {
+            "description": "When the courier answered; ignored when in the future, before the offer or older than 72 hours.",
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ApplicationInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -932,6 +943,60 @@
           "visibility",
           "regime_id",
           "created_at"
+        ],
+        "type": "object"
+      },
+      "CourierFleetMember": {
+        "additionalProperties": false,
+        "properties": {
+          "courier_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "courier_status": {
+            "enum": [
+              "pending",
+              "approved",
+              "rejected",
+              "suspended"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "online": {
+            "type": "boolean"
+          },
+          "regime_id": {
+            "type": "string"
+          },
+          "status": {
+            "description": "pending is an application waiting for the owner.",
+            "enum": [
+              "pending",
+              "active",
+              "removed"
+            ],
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "vehicle": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "courier_id",
+          "name",
+          "vehicle",
+          "courier_status",
+          "online",
+          "regime_id",
+          "status",
+          "updated_at"
         ],
         "type": "object"
       },
@@ -2137,6 +2202,24 @@
         ],
         "type": "object"
       },
+      "FleetMembersOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CourierFleetMember"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "FleetsOutputBody": {
         "additionalProperties": false,
         "properties": {
@@ -2758,6 +2841,11 @@
             "maximum": 180,
             "minimum": -180,
             "type": "number"
+          },
+          "occurred_at": {
+            "description": "When the position was taken. A position older than the one kept is ignored. Ignored when in the future or older than 72 hours.",
+            "format": "date-time",
+            "type": "string"
           }
         },
         "required": [
@@ -3251,6 +3339,11 @@
       "PresenceInputBody": {
         "additionalProperties": false,
         "properties": {
+          "occurred_at": {
+            "description": "When the courier switched; an app without signal sends it later. A switch older than the courier's last change is ignored. Ignored when in the future or older than 72 hours.",
+            "format": "date-time",
+            "type": "string"
+          },
           "online": {
             "type": "boolean"
           }
@@ -5885,23 +5978,20 @@
         "x-sellvex-self": true
       }
     },
-    "/v1/courier/location": {
-      "put": {
-        "description": "A ping from the app: only the last position is kept. Sent in the background only during a ride.",
-        "operationId": "couriers.location.update",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LocationInputBody"
-              }
-            }
-          },
-          "required": true
-        },
+    "/v1/courier/fleets": {
+      "get": {
+        "description": "Fleets of a network (cdl) and open fleets. A store's own fleet is never listed: the store adds its couriers itself.",
+        "operationId": "couriers.openFleets.list",
         "responses": {
-          "204": {
-            "description": "No Content"
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetsOutputBody"
+                }
+              }
+            },
+            "description": "OK"
           },
           "401": {
             "content": {
@@ -5932,6 +6022,120 @@
               }
             },
             "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the fleets I can apply to",
+        "tags": [
+          "couriers"
+        ],
+        "x-sellvex-actor-types": [
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "couriers.profile.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      }
+    },
+    "/v1/courier/location": {
+      "put": {
+        "description": "A ping from the app: only the last position is kept. Sent in the background only during a ride; a queued ping replayed later never overwrites a newer one.",
+        "operationId": "couriers.location.update",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LocationInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
           },
           "422": {
             "content": {
@@ -6263,7 +6467,7 @@
     },
     "/v1/courier/offers/{offer_id}/accept": {
       "post": {
-        "description": "The ride is the courier's, under the regime version of the offer. An offer past its deadline is refused and passed on.",
+        "description": "The ride is the courier's, under the regime version of the offer. An offer past its deadline is refused and passed on. An app that accepted without signal sends occurred_at: an answer given before the deadline counts while the offer is still open.",
         "operationId": "dispatch.offers.accept",
         "parameters": [
           {
@@ -6287,6 +6491,15 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerInputBody"
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "content": {
@@ -6417,6 +6630,15 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AnswerInputBody"
+              }
+            }
+          }
+        },
         "responses": {
           "204": {
             "description": "No Content"
@@ -7903,7 +8125,280 @@
         "x-sellvex-scope": "organization"
       }
     },
+    "/v1/organizations/{organization_id}/courier-fleets/{fleet_id}/members": {
+      "get": {
+        "description": "Every membership, newest first; status=pending lists the applications waiting.",
+        "operationId": "couriers.networkMembers.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "fleet_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "pending",
+                "active",
+                "removed",
+                ""
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetMembersOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the couriers of a fleet of the network",
+        "tags": [
+          "couriers"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "couriers.fleets.read",
+        "x-sellvex-reads": [
+          "personal"
+        ],
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "organization"
+      }
+    },
     "/v1/organizations/{organization_id}/courier-fleets/{fleet_id}/members/{courier_id}": {
+      "delete": {
+        "description": "The membership becomes removed: no new offer comes through the fleet, and rides already accepted keep it.",
+        "operationId": "couriers.networkMembers.remove",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "fleet_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "courier_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourierMembership"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a courier from a fleet of the network",
+        "tags": [
+          "couriers"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "couriers.fleets.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "organization"
+      },
       "put": {
         "description": "Activates the courier's membership — an application they made, or one the network starts — under the given regime or the fleet's.",
         "operationId": "couriers.networkMembers.put",
@@ -8162,6 +8657,116 @@
         "x-sellvex-scope": "organization"
       }
     },
+    "/v1/organizations/{organization_id}/courier-regimes/{regime_id}/versions": {
+      "get": {
+        "description": "Read-only history for the network, newest first: what each ride was accepted under.",
+        "operationId": "couriers.networkRegimeVersions.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "regime_id",
+            "required": true,
+            "schema": {
+              "maxLength": 64,
+              "pattern": "^[a-z][a-z0-9_-]+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegimesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the versions of a work regime",
+        "tags": [
+          "couriers"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "couriers.regimes.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "organization"
+      }
+    },
     "/v1/organizations/{organization_id}/couriers": {
       "get": {
         "description": "Everyone with a membership in a fleet of the network, newest first; filter by status to see who waits for review.",
@@ -8282,7 +8887,7 @@
     },
     "/v1/organizations/{organization_id}/couriers/{courier_id}": {
       "get": {
-        "description": "With every document submitted and its review.",
+        "description": "With every document submitted and its review, and the courier's memberships in the network's fleets.",
         "operationId": "couriers.networkCouriers.get",
         "parameters": [
           {
@@ -8382,7 +8987,7 @@
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
-        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-max-database-queries": 5,
         "x-sellvex-performance-class": "authenticated-read",
         "x-sellvex-permission": "couriers.couriers.read",
         "x-sellvex-reads": [
@@ -12378,7 +12983,280 @@
         "x-sellvex-scope": "store"
       }
     },
+    "/v1/stores/{store_id}/courier-fleets/{fleet_id}/members": {
+      "get": {
+        "operationId": "couriers.storeMembers.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "fleet_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "status",
+            "schema": {
+              "enum": [
+                "pending",
+                "active",
+                "removed",
+                ""
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FleetMembersOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the couriers of a fleet of the store",
+        "tags": [
+          "couriers"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "couriers.fleets.read",
+        "x-sellvex-reads": [
+          "personal"
+        ],
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
     "/v1/stores/{store_id}/courier-fleets/{fleet_id}/members/{courier_id}": {
+      "delete": {
+        "operationId": "couriers.storeMembers.remove",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "fleet_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "courier_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CourierMembership"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove a courier from a fleet of the store",
+        "tags": [
+          "couriers"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "couriers.fleets.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      },
       "put": {
         "description": "The store's own courier, by the id their app shows. They still need the network's approval before they go online.",
         "operationId": "couriers.storeMembers.put",
@@ -12540,7 +13418,7 @@
     },
     "/v1/stores/{store_id}/delivery-labels": {
       "get": {
-        "description": "One label per volume, with its signed QR code, the recipient, the window and the order code. PDF A4 (eight per sheet), PDF 10x15 for thermal printers, or ZPL for Zebra.",
+        "description": "One label per volume, with its signed QR code, the recipient, the window and the order code. PDF A4 (eight per sheet), PDF 10x15 for thermal printers, or ZPL for Zebra. The answer is the file itself, not JSON.",
         "operationId": "dispatch.labels.print",
         "parameters": [
           {
@@ -12588,14 +13466,22 @@
         "responses": {
           "200": {
             "content": {
-              "application/json": {
+              "application/pdf": {
                 "schema": {
-                  "contentEncoding": "base64",
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              },
+              "application/zpl": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
                   "type": "string"
                 }
               }
             },
-            "description": "OK",
+            "description": "The labels, as the file of the format asked for.",
             "headers": {
               "Content-Disposition": {
                 "schema": {
