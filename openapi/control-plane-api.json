@@ -74,6 +74,24 @@
         ],
         "type": "object"
       },
+      "AddressesOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/CustomerAddress"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
       "ApprovalListOutputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1166,6 +1184,65 @@
         ],
         "type": "object"
       },
+      "ContactListOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/StoreContactMessage"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "next_cursor": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "CourierSignup": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "password": {
+            "description": "At least the installation's minimum: 6 in local and CI, 12 elsewhere.",
+            "maxLength": 256,
+            "minLength": 6,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 30,
+            "type": "string"
+          },
+          "terms_version": {
+            "description": "The version of the courier's terms the person accepted. Required.",
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password",
+          "terms_version"
+        ],
+        "type": "object"
+      },
       "CreateCellInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1357,6 +1434,158 @@
           "reason",
           "expires_at"
         ],
+        "type": "object"
+      },
+      "CustomerAccount": {
+        "additionalProperties": false,
+        "properties": {
+          "actor_type": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "terms_accepted_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "terms_version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "subject",
+          "actor_type"
+        ],
+        "type": "object"
+      },
+      "CustomerAddress": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/RecipientAddress"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "address",
+          "default",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "CustomerAddressInput": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/RecipientAddress"
+          },
+          "default": {
+            "type": "boolean"
+          },
+          "label": {
+            "description": "What the buyer calls it: Casa, Trabalho.",
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "label",
+          "address"
+        ],
+        "type": "object"
+      },
+      "CustomerSignup": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "format": "email",
+            "maxLength": 254,
+            "type": "string"
+          },
+          "marketing_consent": {
+            "description": "The person agreed to receive offers from the store named in store_id; recorded by the privacy module.",
+            "type": "boolean"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "password": {
+            "description": "At least the installation's minimum: 6 in local and CI, 12 elsewhere.",
+            "maxLength": 256,
+            "minLength": 6,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 30,
+            "type": "string"
+          },
+          "store_id": {
+            "description": "The shop where the person signed up. Marketing consent is given to this store and no other.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "terms_version": {
+            "description": "The version of the terms of use the person accepted. Required.",
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "password",
+          "terms_version"
+        ],
+        "type": "object"
+      },
+      "CustomerUpdateInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "maxLength": 120,
+            "minLength": 2,
+            "type": "string"
+          },
+          "phone": {
+            "description": "Empty removes it.",
+            "maxLength": 30,
+            "type": "string"
+          }
+        },
         "type": "object"
       },
       "DecisionInputBody": {
@@ -2941,7 +3170,7 @@
             "type": "string"
           },
           "my_permissions": {
-            "description": "The caller's permissions at the organization among the cdl, stores and identity modules.",
+            "description": "The caller's permissions at the organization among the modules the CDL's panel shows: cdl, stores, identity, couriers and dispatch.",
             "items": {
               "type": "string"
             },
@@ -2975,6 +3204,39 @@
           "status",
           "cities",
           "created_at"
+        ],
+        "type": "object"
+      },
+      "PasswordRecoveryFinishInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "new_password": {
+            "maxLength": 256,
+            "minLength": 6,
+            "type": "string"
+          },
+          "token": {
+            "maxLength": 200,
+            "minLength": 20,
+            "type": "string"
+          }
+        },
+        "required": [
+          "token",
+          "new_password"
+        ],
+        "type": "object"
+      },
+      "PasswordRecoveryStartInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
         ],
         "type": "object"
       },
@@ -3464,6 +3726,80 @@
         ],
         "type": "object"
       },
+      "PushDevice": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "last_seen_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "platform": {
+            "enum": [
+              "android",
+              "ios",
+              "web"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "platform",
+          "created_at",
+          "last_seen_at"
+        ],
+        "type": "object"
+      },
+      "PushDevicesOutputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PushDevice"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "type": "object"
+      },
+      "PushRegisterInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "platform": {
+            "enum": [
+              "android",
+              "ios",
+              "web"
+            ],
+            "type": "string"
+          },
+          "token": {
+            "description": "The registration token the push provider gave the app.",
+            "maxLength": 4096,
+            "minLength": 20,
+            "type": "string"
+          }
+        },
+        "required": [
+          "platform",
+          "token"
+        ],
+        "type": "object"
+      },
       "ReadinessBody": {
         "additionalProperties": false,
         "properties": {
@@ -3502,6 +3838,64 @@
             "type": "string"
           }
         },
+        "type": "object"
+      },
+      "RecipientAddress": {
+        "additionalProperties": false,
+        "properties": {
+          "country": {
+            "description": "ISO 3166-1 alpha-2.",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "latitude": {
+            "description": "Optional; with it the distance of a local delivery is measured instead of estimated.",
+            "format": "double",
+            "maximum": 90,
+            "minimum": -90,
+            "type": "number"
+          },
+          "line1": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "line2": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "locality": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "longitude": {
+            "format": "double",
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number"
+          },
+          "postal_code": {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string"
+          },
+          "recipient": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "region": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "country",
+          "postal_code",
+          "locality",
+          "line1"
+        ],
         "type": "object"
       },
       "RefuseInputBody": {
@@ -4001,6 +4395,46 @@
         ],
         "type": "object"
       },
+      "StoreContactMessage": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "subject": {
+            "type": "string"
+          },
+          "user_agent": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "email",
+          "subject",
+          "message",
+          "created_at"
+        ],
+        "type": "object"
+      },
       "StoreModule": {
         "additionalProperties": false,
         "properties": {
@@ -4118,6 +4552,79 @@
         },
         "required": [
           "items"
+        ],
+        "type": "object"
+      },
+      "StorefrontContactInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "type": "string"
+          },
+          "message": {
+            "maxLength": 5000,
+            "minLength": 10,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "type": "string"
+          },
+          "phone": {
+            "maxLength": 30,
+            "type": "string"
+          },
+          "subject": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "website": {
+            "description": "Leave empty. A form hides this field; anything in it marks the message as a robot's.",
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "email",
+          "subject",
+          "message"
+        ],
+        "type": "object"
+      },
+      "StorefrontNewsletterInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "type": "string"
+          },
+          "text_version": {
+            "description": "Which wording of the opt-in the visitor saw.",
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email",
+          "text_version"
+        ],
+        "type": "object"
+      },
+      "StorefrontUnsubscribeInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
         ],
         "type": "object"
       },
@@ -6313,6 +6820,728 @@
         "x-sellvex-scope": "platform"
       }
     },
+    "/v1/couriers/signup": {
+      "post": {
+        "description": "The public signup of the Sellvex Entregas app (FR-COUR-003): the login is created in the identity provider with the actor type courier, through the same adapter as a buyer's. The courier then fills their profile (PUT /v1/courier/me) and sends their documents, and a network reviews them. An e-mail that already has an account is refused with 409 identity.signup_login_exists.",
+        "operationId": "identity.couriers.signup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CourierSignup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAccount"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create my courier account",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 1000,
+        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-performance-class": "control-plane",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/customers/me": {
+      "get": {
+        "operationId": "identity.customers.me",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAccount"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read my buyer account",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-actor-types": [
+          "customer",
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "identity.profile.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      },
+      "patch": {
+        "operationId": "identity.customers.update",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerUpdateInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAccount"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Change my name or phone",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-actor-types": [
+          "customer",
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "identity.profile.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      }
+    },
+    "/v1/customers/me/addresses": {
+      "get": {
+        "operationId": "identity.customerAddresses.list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddressesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my addresses",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-actor-types": [
+          "customer",
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "identity.profile.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      },
+      "post": {
+        "description": "The first address saved is the default. At most 20.",
+        "operationId": "identity.customerAddresses.create",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerAddressInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddress"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Save an address",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-actor-types": [
+          "customer",
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "identity.profile.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      }
+    },
+    "/v1/customers/me/addresses/{address_id}": {
+      "delete": {
+        "operationId": "identity.customerAddresses.delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Remove an address",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-actor-types": [
+          "customer",
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "identity.profile.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      },
+      "put": {
+        "operationId": "identity.customerAddresses.update",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "address_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerAddressInput"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAddress"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Replace an address",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-actor-types": [
+          "customer",
+          "courier"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "identity.profile.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      }
+    },
+    "/v1/customers/password-recovery": {
+      "post": {
+        "description": "Mails a one-time link, good for an hour, when the e-mail is a buyer's or a courier's account. The answer is 202 whether or not the account exists, so nobody learns who has one; at most three links an hour are sent.",
+        "operationId": "identity.passwordRecovery.start",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordRecoveryStartInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Ask for a password recovery link",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 1000,
+        "x-sellvex-max-database-queries": 3,
+        "x-sellvex-performance-class": "control-plane",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/customers/password-recovery/finish": {
+      "post": {
+        "description": "Spends the link and sets the new password. A link used, expired or unknown is refused with 422 identity.recovery_invalid.",
+        "operationId": "identity.passwordRecovery.finish",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PasswordRecoveryFinishInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Set a new password with the recovery link",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 1000,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "control-plane",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/customers/signup": {
+      "post": {
+        "description": "Creates the login in the identity provider, with the actor type customer, and keeps the version of the terms accepted. Marketing consent needs the shop it is given to, so here it is refused with 422 identity.consent_needs_store; the shop's own route records it. An e-mail that already has an account is refused with 409 identity.signup_login_exists.",
+        "operationId": "identity.customers.signup",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerSignup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAccount"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create my buyer account",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 1000,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "control-plane",
+        "x-sellvex-replica-allowed": false
+      }
+    },
     "/v1/extensions": {
       "get": {
         "description": "The catalogue, newest first. Without a status it lists every state, which is what a review queue and a public catalogue both read.",
@@ -7202,7 +8431,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "courier"
+          "courier",
+          "customer"
         ],
         "x-sellvex-cache-policy": "private",
         "x-sellvex-latency-budget-p99-ms": 150,
@@ -7300,7 +8530,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "courier"
+          "courier",
+          "customer"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -7400,7 +8631,8 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "courier"
+          "courier",
+          "customer"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
@@ -7540,13 +8772,282 @@
         "x-sellvex-actor-types": [
           "platform_operator",
           "store_member",
-          "courier"
+          "courier",
+          "customer"
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
         "x-sellvex-max-database-queries": 4,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-permission": "identity.profile.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      }
+    },
+    "/v1/me/push-devices": {
+      "get": {
+        "operationId": "notifications.pushDevices.list",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushDevicesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my phones registered for pushes",
+        "tags": [
+          "notifications"
+        ],
+        "x-sellvex-actor-types": [
+          "courier",
+          "customer"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "notifications.devices.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      },
+      "put": {
+        "description": "Keeps the push token the app got from FCM. Registering it again only refreshes it; a token registered by another login moves to the caller, because it is the same phone signed in by another person. Idempotent by its shape.",
+        "operationId": "notifications.pushDevices.register",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PushRegisterInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PushDevice"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Register this phone for pushes",
+        "tags": [
+          "notifications"
+        ],
+        "x-sellvex-actor-types": [
+          "courier",
+          "customer"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "notifications.devices.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform",
+        "x-sellvex-self": true
+      }
+    },
+    "/v1/me/push-devices/{device_id}": {
+      "delete": {
+        "description": "What signing out of the app calls.",
+        "operationId": "notifications.pushDevices.remove",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "device_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Stop pushes to a phone",
+        "tags": [
+          "notifications"
+        ],
+        "x-sellvex-actor-types": [
+          "courier",
+          "customer"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "notifications.devices.write",
         "x-sellvex-replica-allowed": false,
         "x-sellvex-scope": "platform",
         "x-sellvex-self": true
@@ -14027,6 +15528,231 @@
         "x-sellvex-scope": "platform"
       }
     },
+    "/v1/storefronts/{store_id}/contact-messages": {
+      "post": {
+        "description": "A visitor's message to the store, without an account. At most 5 an hour from one origin and 100 an hour to one store (409 stores.contact_rate_limited); a message with more than 3 links is refused. The answer is 202 also when the hidden website field marks it as a robot's, which is then not kept.",
+        "operationId": "storefront.contactMessages.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "X-Forwarded-For",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "header",
+            "name": "User-Agent",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontContactInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "description": "Accepted"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Write to the store",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/customers/signup": {
+      "post": {
+        "description": "The same signup, from a shop: with marketing_consent the opt-in is recorded with this store and no other (DEC-PRIV-003), and the shop is kept as where the person signed up.",
+        "operationId": "identity.customers.signupAtStore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CustomerSignup"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CustomerAccount"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create my buyer account at a shop",
+        "tags": [
+          "identity"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 1000,
+        "x-sellvex-max-database-queries": 10,
+        "x-sellvex-performance-class": "control-plane",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/newsletter": {
+      "post": {
+        "description": "Records the visitor's marketing consent with this store, and only this one: consent is per store (DEC-PRIV-003). The e-mail is the consent's buyer reference, so the store's marketing messages to it pass the consent check. Subscribing twice keeps the consent in force.",
+        "operationId": "storefront.newsletter.subscribe",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontNewsletterInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Subscribe to the store's newsletter",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/newsletter/unsubscribe": {
+      "post": {
+        "description": "Withdraws the marketing consent of the e-mail with this store. It answers 204 whether or not the e-mail was subscribed, so nobody learns who is.",
+        "operationId": "storefront.newsletter.unsubscribe",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontUnsubscribeInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Leave the store's newsletter",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-replica-allowed": false
+      }
+    },
     "/v1/stores/{store_id}": {
       "get": {
         "operationId": "stores.stores.get",
@@ -15211,6 +16937,129 @@
         "x-sellvex-max-database-queries": 6,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-permission": "privacy.consents.write",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/contact-messages": {
+      "get": {
+        "operationId": "stores.contactMessages.list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "cursor",
+            "schema": {
+              "maxLength": 512,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "format": "int64",
+              "maximum": 200,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContactListOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List the messages visitors wrote to the store",
+        "tags": [
+          "stores"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "stores.messages.read",
+        "x-sellvex-reads": [
+          "personal"
+        ],
         "x-sellvex-replica-allowed": false,
         "x-sellvex-scope": "store"
       }
@@ -19869,6 +21718,246 @@
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
         "x-sellvex-max-database-queries": 8,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-permission": "stores.stores.manage",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/pickup-address": {
+      "get": {
+        "operationId": "stores.pickupAddress.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientAddress"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read where couriers collect the store's orders",
+        "tags": [
+          "stores"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "stores.stores.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      },
+      "put": {
+        "description": "The address a local delivery starts from. A ride copies it when it opens, so changing it later does not move rides already offered. With coordinates the distance of a ride is measured; without them it is estimated.",
+        "operationId": "stores.pickupAddress.set",
+        "parameters": [
+          {
+            "description": "Unique key for this mutation. Retrying with the same key and payload returns the original response.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "maxLength": 255,
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecipientAddress"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecipientAddress"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Set where couriers collect the store's orders",
+        "tags": [
+          "stores"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 2,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-permission": "stores.stores.manage",
         "x-sellvex-replica-allowed": false,

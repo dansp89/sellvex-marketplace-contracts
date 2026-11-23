@@ -639,6 +639,50 @@
     },
     {
       "module": "dispatch",
+      "type": "offer.made",
+      "version": 1,
+      "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.offer.made.v1",
+      "payload": [
+        {
+          "name": "offer_id",
+          "type": "uuid"
+        },
+        {
+          "name": "task_id",
+          "type": "uuid"
+        },
+        {
+          "name": "store_id",
+          "type": "uuid"
+        },
+        {
+          "name": "courier_id",
+          "type": "uuid"
+        },
+        {
+          "name": "currency",
+          "type": "string"
+        },
+        {
+          "name": "net_amount",
+          "type": "integer"
+        },
+        {
+          "name": "distance_meters",
+          "type": "integer"
+        },
+        {
+          "name": "locality",
+          "type": "string"
+        },
+        {
+          "name": "expires_at",
+          "type": "timestamp"
+        }
+      ]
+    },
+    {
+      "module": "dispatch",
       "type": "ride.completed",
       "version": 1,
       "subject_pattern": "sellvex.\u003ccell_id\u003e.evt.dispatch.ride.completed.v1",

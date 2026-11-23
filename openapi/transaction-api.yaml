@@ -1032,6 +1032,47 @@ components:
         - area
         - requirements
       type: object
+    CourierUpload:
+      additionalProperties: false
+      properties:
+        completed_at:
+          format: date-time
+          type: string
+        content_type:
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        expires_at:
+          format: date-time
+          type: string
+        id:
+          format: uuid
+          type: string
+        kind:
+          enum:
+            - document
+            - delivery_photo
+          type: string
+        size_bytes:
+          format: int64
+          type: integer
+        status:
+          enum:
+            - pending
+            - uploaded
+          type: string
+        url:
+          description: Where to PUT the bytes (while pending) or read them (once uploaded). Good until expires_at.
+          type: string
+      required:
+        - id
+        - kind
+        - content_type
+        - size_bytes
+        - status
+        - created_at
+      type: object
     Credential:
       additionalProperties: false
       properties:
@@ -1183,12 +1224,18 @@ components:
       properties:
         country:
           type: string
+        latitude:
+          format: double
+          type: number
         line1:
           type: string
         line2:
           type: string
         locality:
           type: string
+        longitude:
+          format: double
+          type: number
         postal_code:
           type: string
         recipient:
@@ -1324,6 +1371,9 @@ components:
           type: string
         destination:
           $ref: "#/components/schemas/DeliveryAddress"
+        distance_estimated:
+          description: True when an end had no coordinates and the distance is the city estimate, not a measurement.
+          type: boolean
         distance_meters:
           format: int64
           type: integer
@@ -1351,8 +1401,14 @@ components:
           type: string
         peak:
           type: boolean
+        pickup:
+          $ref: "#/components/schemas/DeliveryAddress"
+          description: "Where the ride starts: the store's pickup address when the ride opened."
         proof:
           $ref: "#/components/schemas/DeliveryProof"
+        recipient_phone:
+          description: The phone of whoever receives it. Shown to the courier of the ride while it is on the street, never before acceptance nor after it ends.
+          type: string
         regime_id:
           type: string
         regime_version:
@@ -1411,6 +1467,7 @@ components:
         - tracking_code
         - destination
         - distance_meters
+        - distance_estimated
         - peak
         - status
         - cascade
@@ -2596,6 +2653,109 @@ components:
           format: uuid
           type: string
       type: object
+    PurchaseDeliveryStep:
+      additionalProperties: false
+      properties:
+        kind:
+          description: "What happened: created, assigned, collected, attempt_failed, delivered, returned, cancelled."
+          type: string
+        occurred_at:
+          format: date-time
+          type: string
+      required:
+        - kind
+        - occurred_at
+      type: object
+    PurchaseDetail:
+      additionalProperties: false
+      properties:
+        channel_id:
+          description: The sales channel, when the cart named one.
+          format: uuid
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        destination:
+          $ref: "#/components/schemas/RecipientDelivery"
+          description: Where the buyer asked for it to go, and how to reach them.
+        discount_amount:
+          description: What promotions took off the lines.
+          format: int64
+          type: integer
+        history:
+          description: Present when reading a single order.
+          items:
+            $ref: "#/components/schemas/Transition"
+          type:
+            - array
+            - "null"
+        id:
+          format: uuid
+          type: string
+        items:
+          description: Present when reading a single order.
+          items:
+            $ref: "#/components/schemas/Item"
+          type:
+            - array
+            - "null"
+        local_delivery:
+          $ref: "#/components/schemas/PurchaseLocalDelivery"
+          description: Present when the order travels by the platform's couriers.
+        marketplace_order_id:
+          format: uuid
+          type: string
+        status:
+          enum:
+            - pending_payment
+            - placed
+            - cancelled
+          type: string
+        store_id:
+          format: uuid
+          type: string
+        subtotal_amount:
+          description: What was charged for the lines, after discounts.
+          format: int64
+          type: integer
+        subtotal_currency:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - marketplace_order_id
+        - store_id
+        - status
+        - subtotal_amount
+        - subtotal_currency
+        - discount_amount
+        - created_at
+        - updated_at
+      type: object
+    PurchaseLocalDelivery:
+      additionalProperties: false
+      properties:
+        delivery_code:
+          description: The four digits to tell the courier on arrival. Present while the delivery is open.
+          type: string
+        status:
+          type: string
+        timeline:
+          items:
+            $ref: "#/components/schemas/PurchaseDeliveryStep"
+          type:
+            - array
+            - "null"
+        tracking_code:
+          type: string
+      required:
+        - status
+        - tracking_code
+        - timeline
+      type: object
     QrInputBody:
       additionalProperties: false
       properties:
@@ -2630,6 +2790,7 @@ components:
           type: string
         destination:
           $ref: "#/components/schemas/Address"
+          description: Where it goes. Omitted with seller_order_id, the address the buyer gave at checkout is used (FR-ORD-004).
         origin:
           $ref: "#/components/schemas/Address"
         packages:
@@ -2640,10 +2801,13 @@ components:
           type:
             - array
             - "null"
+        seller_order_id:
+          description: The order being quoted; with it the destination may be omitted.
+          format: uuid
+          type: string
       required:
         - currency
         - origin
-        - destination
         - packages
       type: object
     ReadinessBody:
@@ -2679,6 +2843,76 @@ components:
             - "null"
       required:
         - items
+      type: object
+    RecipientAddress:
+      additionalProperties: false
+      properties:
+        country:
+          description: ISO 3166-1 alpha-2.
+          maxLength: 2
+          minLength: 2
+          type: string
+        latitude:
+          description: Optional; with it the distance of a local delivery is measured instead of estimated.
+          format: double
+          maximum: 90
+          minimum: -90
+          type: number
+        line1:
+          maxLength: 200
+          minLength: 1
+          type: string
+        line2:
+          maxLength: 200
+          type: string
+        locality:
+          maxLength: 200
+          minLength: 1
+          type: string
+        longitude:
+          format: double
+          maximum: 180
+          minimum: -180
+          type: number
+        postal_code:
+          maxLength: 20
+          minLength: 1
+          type: string
+        recipient:
+          maxLength: 200
+          type: string
+        region:
+          maxLength: 200
+          type: string
+      required:
+        - country
+        - postal_code
+        - locality
+        - line1
+      type: object
+    RecipientContact:
+      additionalProperties: false
+      properties:
+        email:
+          maxLength: 254
+          type: string
+        name:
+          maxLength: 200
+          type: string
+        phone:
+          description: 8 to 15 digits, optional leading +; spaces, dashes and parentheses are ignored.
+          maxLength: 30
+          type: string
+      type: object
+    RecipientDelivery:
+      additionalProperties: false
+      properties:
+        address:
+          $ref: "#/components/schemas/RecipientAddress"
+        contact:
+          $ref: "#/components/schemas/RecipientContact"
+      required:
+        - contact
       type: object
     ReconciliationCase:
       additionalProperties: false
@@ -2890,6 +3124,151 @@ components:
       required:
         - items
       type: object
+    ReportRide:
+      additionalProperties: false
+      properties:
+        completed_at:
+          format: date-time
+          type: string
+        courier_id:
+          format: uuid
+          type: string
+        currency:
+          type: string
+        fee_amount:
+          format: int64
+          type: integer
+        fleet_id:
+          format: uuid
+          type: string
+        gross_amount:
+          format: int64
+          type: integer
+        id:
+          format: uuid
+          type: string
+        net_amount:
+          format: int64
+          type: integer
+        payer:
+          type: string
+        regime_id:
+          type: string
+        regime_version:
+          format: int64
+          type: integer
+        store_id:
+          format: uuid
+          type: string
+        task_id:
+          format: uuid
+          type: string
+      required:
+        - store_id
+        - courier_id
+        - fleet_id
+        - id
+        - task_id
+        - regime_id
+        - regime_version
+        - payer
+        - currency
+        - gross_amount
+        - fee_amount
+        - net_amount
+        - completed_at
+      type: object
+    ReportRideTotal:
+      additionalProperties: false
+      properties:
+        currency:
+          type: string
+        fee_amount:
+          format: int64
+          type: integer
+        gross_amount:
+          format: int64
+          type: integer
+        net_amount:
+          format: int64
+          type: integer
+        rides:
+          format: int64
+          type: integer
+      required:
+        - currency
+        - rides
+        - gross_amount
+        - fee_amount
+        - net_amount
+      type: object
+    ReportStatusCount:
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+        tasks:
+          format: int64
+          type: integer
+      required:
+        - status
+        - tasks
+      type: object
+    ReportTask:
+      additionalProperties: false
+      properties:
+        attempts:
+          format: int64
+          type: integer
+        courier_id:
+          format: uuid
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        currency:
+          type: string
+        distance_estimated:
+          type: boolean
+        distance_meters:
+          format: int64
+          type: integer
+        fare_amount:
+          format: int64
+          type: integer
+        id:
+          format: uuid
+          type: string
+        locality:
+          type: string
+        seller_order_id:
+          format: uuid
+          type: string
+        status:
+          type: string
+        store_id:
+          format: uuid
+          type: string
+        tracking_code:
+          type: string
+        updated_at:
+          format: date-time
+          type: string
+      required:
+        - id
+        - store_id
+        - seller_order_id
+        - tracking_code
+        - locality
+        - status
+        - distance_meters
+        - distance_estimated
+        - currency
+        - fare_amount
+        - attempts
+        - created_at
+        - updated_at
+      type: object
     ResolveInputBody:
       additionalProperties: false
       properties:
@@ -3045,6 +3424,28 @@ components:
           type: string
       required:
         - decision
+      type: object
+    RideReportOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/ReportRide"
+          type:
+            - array
+            - "null"
+        next_cursor:
+          type: string
+        totals:
+          description: The period's rides added up by currency, whatever the page.
+          items:
+            $ref: "#/components/schemas/ReportRideTotal"
+          type:
+            - array
+            - "null"
+      required:
+        - items
+        - totals
       type: object
     RidesOutputBody:
       additionalProperties: false
@@ -3571,6 +3972,8 @@ components:
         cart_id:
           format: uuid
           type: string
+        delivery:
+          $ref: "#/components/schemas/RecipientDelivery"
         payment_method_token:
           maxLength: 200
           minLength: 1
@@ -3578,6 +3981,128 @@ components:
       required:
         - cart_id
         - payment_method_token
+      type: object
+    StorefrontPackage:
+      additionalProperties: false
+      properties:
+        height_mm:
+          format: int64
+          maximum: 10000
+          minimum: 1
+          type: integer
+        length_mm:
+          format: int64
+          maximum: 10000
+          minimum: 1
+          type: integer
+        weight_grams:
+          format: int64
+          maximum: 1000000
+          minimum: 1
+          type: integer
+        width_mm:
+          format: int64
+          maximum: 10000
+          minimum: 1
+          type: integer
+      required:
+        - weight_grams
+        - length_mm
+        - width_mm
+        - height_mm
+      type: object
+    StorefrontQuoteInputBody:
+      additionalProperties: false
+      properties:
+        cart_id:
+          format: uuid
+          type: string
+        packages:
+          description: Omitted, the cart is quoted as one 1 kg parcel of 20 × 20 × 20 cm.
+          items:
+            $ref: "#/components/schemas/StorefrontPackage"
+          maxItems: 50
+          type:
+            - array
+            - "null"
+      required:
+        - cart_id
+      type: object
+    StorefrontShippingOption:
+      additionalProperties: false
+      properties:
+        carrier:
+          type: string
+        estimated_days:
+          format: int64
+          type: integer
+        price_amount:
+          format: int64
+          type: integer
+        service_code:
+          type: string
+        service_name:
+          type: string
+      required:
+        - carrier
+        - service_code
+        - service_name
+        - price_amount
+        - estimated_days
+      type: object
+    StorefrontShippingQuote:
+      additionalProperties: false
+      properties:
+        currency:
+          type: string
+        degraded:
+          description: Carriers that did not answer in time.
+          items:
+            type: string
+          type:
+            - array
+            - "null"
+        expires_at:
+          format: date-time
+          type: string
+        id:
+          format: uuid
+          type: string
+        options:
+          description: Cheapest first.
+          items:
+            $ref: "#/components/schemas/StorefrontShippingOption"
+          type:
+            - array
+            - "null"
+      required:
+        - id
+        - currency
+        - options
+        - degraded
+        - expires_at
+      type: object
+    TaskReportOutputBody:
+      additionalProperties: false
+      properties:
+        by_status:
+          description: Every delivery of the period by status, whatever the page and the status filter.
+          items:
+            $ref: "#/components/schemas/ReportStatusCount"
+          type:
+            - array
+            - "null"
+        items:
+          items:
+            $ref: "#/components/schemas/ReportTask"
+          type:
+            - array
+            - "null"
+        next_cursor:
+          type: string
+      required:
+        - items
+        - by_status
       type: object
     TasksOutputBody:
       additionalProperties: false
@@ -3635,6 +4160,31 @@ components:
         - to
         - actor_id
         - occurred_at
+      type: object
+    UploadStartInputBody:
+      additionalProperties: false
+      properties:
+        content_type:
+          enum:
+            - image/jpeg
+            - image/png
+            - image/webp
+            - application/pdf
+          type: string
+        kind:
+          enum:
+            - document
+            - delivery_photo
+          type: string
+        size_bytes:
+          format: int64
+          maximum: 10485760
+          minimum: 1
+          type: integer
+      required:
+        - kind
+        - content_type
+        - size_bytes
       type: object
     VolumeCustody:
       additionalProperties: false
@@ -5395,6 +5945,234 @@ paths:
       x-sellvex-replica-allowed: false
       x-sellvex-scope: platform
       x-sellvex-self: true
+  /v1/courier/uploads:
+    post:
+      description: "A document photo or a delivery photo. Answers a signed URL to PUT exactly size_bytes of content_type to, good for 15 minutes; then confirm with .../complete. The file is the courier's: no store or network reads it except the network reviewing that courier."
+      operationId: couriers.uploads.create
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UploadStartInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierUpload"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Start sending a file
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - courier
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.profile.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+      x-sellvex-self: true
+  /v1/courier/uploads/{upload_id}:
+    get:
+      operationId: couriers.uploads.get
+      parameters:
+        - in: path
+          name: upload_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierUpload"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Read one of my files
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - courier
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: couriers.profile.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+      x-sellvex-self: true
+  /v1/courier/uploads/{upload_id}/complete:
+    post:
+      description: Checks the object holds exactly the size and type declared. A file that did not arrive, or arrived different, is refused with 409 couriers.upload_incomplete. Its id is then what a document or a proof of delivery names.
+      operationId: couriers.uploads.complete
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: upload_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierUpload"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Confirm a file arrived
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - courier
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 3
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.profile.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+      x-sellvex-self: true
   /v1/health/liveness:
     get:
       description: Reports that the process can serve requests. Does not probe dependencies.
@@ -5435,6 +6213,133 @@ paths:
       summary: Get readiness
       tags:
         - health
+  /v1/my-purchases:
+    get:
+      description: What the authenticated buyer bought anywhere on the platform, newest first, in every state. The buyer comes from the token, never from the request.
+      operationId: orders.myPurchases.list
+      parameters:
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            default: 50
+            format: int64
+            maximum: 100
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MyPurchasesOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List my purchases in every store
+      tags:
+        - orders
+      x-sellvex-actor-types:
+        - customer
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: orders.purchases.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/my-purchases/{order_id}:
+    get:
+      description: One of the buyer's seller orders with its items, its history, the destination given at checkout and, when it travels by courier, the delivery's timeline and the four-digit code to tell the courier. Another buyer's order answers 404, exactly as one that does not exist.
+      operationId: orders.myPurchases.get
+      parameters:
+        - in: path
+          name: order_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PurchaseDetail"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Read one of my purchases
+      tags:
+        - orders
+      x-sellvex-actor-types:
+        - customer
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: orders.purchases.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
   /v1/organizations/{organization_id}/courier-documents/{document_id}/review:
     post:
       description: An approved document counts until the day after its expiry, when the courier leaves the queue on their own.
@@ -6341,6 +7246,294 @@ paths:
       x-sellvex-max-database-queries: 8
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: couriers.couriers.review
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: organization
+  /v1/organizations/{organization_id}/couriers/{courier_id}/uploads/{upload_id}:
+    get:
+      description: What the network reviewing a courier's documents opens. A courier of another network, or another courier's file, answers 404.
+      operationId: couriers.uploads.review
+      parameters:
+        - in: path
+          name: organization_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: courier_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: upload_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierUpload"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Read a file of a courier of the network
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 4
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: couriers.couriers.read
+      x-sellvex-reads:
+        - personal
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: organization
+  /v1/organizations/{organization_id}/delivery-reports/rides:
+    get:
+      description: The rides completed for every store of the organization in the period, newest first, a page at a time, with the totals by currency. courier_id narrows both to one courier.
+      operationId: dispatch.reports.rides
+      parameters:
+        - in: path
+          name: organization_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - description: "Start of the period, inclusive. Default: 30 days before to."
+          explode: false
+          in: query
+          name: from
+          schema:
+            description: "Start of the period, inclusive. Default: 30 days before to."
+            format: date-time
+            type: string
+        - description: "End of the period, exclusive. Default: now."
+          explode: false
+          in: query
+          name: to
+          schema:
+            description: "End of the period, exclusive. Default: now."
+            format: date-time
+            type: string
+        - explode: false
+          in: query
+          name: courier_id
+          schema:
+            format: uuid
+            type: string
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            maxLength: 512
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            maximum: 200
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RideReportOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Report the network's rides
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.reports.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: organization
+  /v1/organizations/{organization_id}/delivery-reports/tasks:
+    get:
+      description: "The local deliveries of every store of the organization in the period, newest first, a page at a time, with the count by status. No address, code or phone: a report is about the work."
+      operationId: dispatch.reports.tasks
+      parameters:
+        - in: path
+          name: organization_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - description: "Start of the period, inclusive. Default: 30 days before to."
+          explode: false
+          in: query
+          name: from
+          schema:
+            description: "Start of the period, inclusive. Default: 30 days before to."
+            format: date-time
+            type: string
+        - description: "End of the period, exclusive. Default: now. At most 366 days after from."
+          explode: false
+          in: query
+          name: to
+          schema:
+            description: "End of the period, exclusive. Default: now. At most 366 days after from."
+            format: date-time
+            type: string
+        - explode: false
+          in: query
+          name: status
+          schema:
+            enum:
+              - awaiting_ready
+              - offering
+              - assigned
+              - in_route
+              - attempt_failed
+              - returning
+              - delivered
+              - returned
+              - escalated
+              - cancelled
+            type: string
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            maxLength: 512
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            maximum: 200
+            minimum: 1
+            type: integer
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaskReportOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Report the network's deliveries
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.reports.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: organization
   /v1/organizations/{organization_id}/ledger/accounts:
@@ -7537,6 +8730,44 @@ paths:
       x-sellvex-latency-budget-p99-ms: 150
       x-sellvex-max-database-queries: 3
       x-sellvex-performance-class: tenant-read
+      x-sellvex-replica-allowed: false
+  /v1/storefronts/{store_id}/shipping-quotes:
+    post:
+      description: What sending the cart costs, from the store's pickup address to the address set on the cart. A cart without an address is refused with 422 storefront.no_destination, and a store without a pickup address with 409 storefront.no_origin.
+      operationId: storefront.shippingQuotes.create
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StorefrontQuoteInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StorefrontShippingQuote"
+          description: Created
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: Quote shipping for a cart
+      tags:
+        - storefront
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 12
+      x-sellvex-performance-class: transactional-write
       x-sellvex-replica-allowed: false
   /v1/stores/{store_id}/chargebacks:
     get:

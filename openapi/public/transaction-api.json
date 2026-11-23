@@ -619,6 +619,10 @@
           "country": {
             "type": "string"
           },
+          "latitude": {
+            "format": "double",
+            "type": "number"
+          },
           "line1": {
             "type": "string"
           },
@@ -627,6 +631,10 @@
           },
           "locality": {
             "type": "string"
+          },
+          "longitude": {
+            "format": "double",
+            "type": "number"
           },
           "postal_code": {
             "type": "string"
@@ -807,6 +815,10 @@
           "destination": {
             "$ref": "#/components/schemas/DeliveryAddress"
           },
+          "distance_estimated": {
+            "description": "True when an end had no coordinates and the distance is the city estimate, not a measurement.",
+            "type": "boolean"
+          },
           "distance_meters": {
             "format": "int64",
             "type": "integer"
@@ -845,8 +857,16 @@
           "peak": {
             "type": "boolean"
           },
+          "pickup": {
+            "$ref": "#/components/schemas/DeliveryAddress",
+            "description": "Where the ride starts: the store's pickup address when the ride opened."
+          },
           "proof": {
             "$ref": "#/components/schemas/DeliveryProof"
+          },
+          "recipient_phone": {
+            "description": "The phone of whoever receives it. Shown to the courier of the ride while it is on the street, never before acceptance nor after it ends.",
+            "type": "string"
           },
           "regime_id": {
             "type": "string"
@@ -923,6 +943,7 @@
           "tracking_code",
           "destination",
           "distance_meters",
+          "distance_estimated",
           "peak",
           "status",
           "cascade",
@@ -1913,6 +1934,145 @@
         ],
         "type": "object"
       },
+      "PurchaseDeliveryStep": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "description": "What happened: created, assigned, collected, attempt_failed, delivered, returned, cancelled.",
+            "type": "string"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "occurred_at"
+        ],
+        "type": "object"
+      },
+      "PurchaseDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "channel_id": {
+            "description": "The sales channel, when the cart named one.",
+            "format": "uuid",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "destination": {
+            "$ref": "#/components/schemas/RecipientDelivery",
+            "description": "Where the buyer asked for it to go, and how to reach them."
+          },
+          "discount_amount": {
+            "description": "What promotions took off the lines.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "history": {
+            "description": "Present when reading a single order.",
+            "items": {
+              "$ref": "#/components/schemas/Transition"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "items": {
+            "description": "Present when reading a single order.",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "local_delivery": {
+            "$ref": "#/components/schemas/PurchaseLocalDelivery",
+            "description": "Present when the order travels by the platform's couriers."
+          },
+          "marketplace_order_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending_payment",
+              "placed",
+              "cancelled"
+            ],
+            "type": "string"
+          },
+          "store_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "subtotal_amount": {
+            "description": "What was charged for the lines, after discounts.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "subtotal_currency": {
+            "type": "string"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "marketplace_order_id",
+          "store_id",
+          "status",
+          "subtotal_amount",
+          "subtotal_currency",
+          "discount_amount",
+          "created_at",
+          "updated_at"
+        ],
+        "type": "object"
+      },
+      "PurchaseLocalDelivery": {
+        "additionalProperties": false,
+        "properties": {
+          "delivery_code": {
+            "description": "The four digits to tell the courier on arrival. Present while the delivery is open.",
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "timeline": {
+            "items": {
+              "$ref": "#/components/schemas/PurchaseDeliveryStep"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "tracking_code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "tracking_code",
+          "timeline"
+        ],
+        "type": "object"
+      },
       "QuoteInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1922,7 +2082,8 @@
             "type": "string"
           },
           "destination": {
-            "$ref": "#/components/schemas/Address"
+            "$ref": "#/components/schemas/Address",
+            "description": "Where it goes. Omitted with seller_order_id, the address the buyer gave at checkout is used (FR-ORD-004)."
           },
           "origin": {
             "$ref": "#/components/schemas/Address"
@@ -1937,12 +2098,16 @@
               "array",
               "null"
             ]
+          },
+          "seller_order_id": {
+            "description": "The order being quoted; with it the destination may be omitted.",
+            "format": "uuid",
+            "type": "string"
           }
         },
         "required": [
           "currency",
           "origin",
-          "destination",
           "packages"
         ],
         "type": "object"
@@ -1992,6 +2157,98 @@
         },
         "required": [
           "items"
+        ],
+        "type": "object"
+      },
+      "RecipientAddress": {
+        "additionalProperties": false,
+        "properties": {
+          "country": {
+            "description": "ISO 3166-1 alpha-2.",
+            "maxLength": 2,
+            "minLength": 2,
+            "type": "string"
+          },
+          "latitude": {
+            "description": "Optional; with it the distance of a local delivery is measured instead of estimated.",
+            "format": "double",
+            "maximum": 90,
+            "minimum": -90,
+            "type": "number"
+          },
+          "line1": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "line2": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "locality": {
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          },
+          "longitude": {
+            "format": "double",
+            "maximum": 180,
+            "minimum": -180,
+            "type": "number"
+          },
+          "postal_code": {
+            "maxLength": 20,
+            "minLength": 1,
+            "type": "string"
+          },
+          "recipient": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "region": {
+            "maxLength": 200,
+            "type": "string"
+          }
+        },
+        "required": [
+          "country",
+          "postal_code",
+          "locality",
+          "line1"
+        ],
+        "type": "object"
+      },
+      "RecipientContact": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "maxLength": 254,
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 200,
+            "type": "string"
+          },
+          "phone": {
+            "description": "8 to 15 digits, optional leading +; spaces, dashes and parentheses are ignored.",
+            "maxLength": 30,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "RecipientDelivery": {
+        "additionalProperties": false,
+        "properties": {
+          "address": {
+            "$ref": "#/components/schemas/RecipientAddress"
+          },
+          "contact": {
+            "$ref": "#/components/schemas/RecipientContact"
+          }
+        },
+        "required": [
+          "contact"
         ],
         "type": "object"
       },
@@ -2829,6 +3086,9 @@
             "format": "uuid",
             "type": "string"
           },
+          "delivery": {
+            "$ref": "#/components/schemas/RecipientDelivery"
+          },
           "payment_method_token": {
             "maxLength": 200,
             "minLength": 1,
@@ -2838,6 +3098,140 @@
         "required": [
           "cart_id",
           "payment_method_token"
+        ],
+        "type": "object"
+      },
+      "StorefrontPackage": {
+        "additionalProperties": false,
+        "properties": {
+          "height_mm": {
+            "format": "int64",
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "length_mm": {
+            "format": "int64",
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "weight_grams": {
+            "format": "int64",
+            "maximum": 1000000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "width_mm": {
+            "format": "int64",
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "weight_grams",
+          "length_mm",
+          "width_mm",
+          "height_mm"
+        ],
+        "type": "object"
+      },
+      "StorefrontQuoteInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "cart_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "packages": {
+            "description": "Omitted, the cart is quoted as one 1 kg parcel of 20 × 20 × 20 cm.",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontPackage"
+            },
+            "maxItems": 50,
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "cart_id"
+        ],
+        "type": "object"
+      },
+      "StorefrontShippingOption": {
+        "additionalProperties": false,
+        "properties": {
+          "carrier": {
+            "type": "string"
+          },
+          "estimated_days": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "price_amount": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "service_code": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "carrier",
+          "service_code",
+          "service_name",
+          "price_amount",
+          "estimated_days"
+        ],
+        "type": "object"
+      },
+      "StorefrontShippingQuote": {
+        "additionalProperties": false,
+        "properties": {
+          "currency": {
+            "type": "string"
+          },
+          "degraded": {
+            "description": "Carriers that did not answer in time.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "expires_at": {
+            "format": "date-time",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "options": {
+            "description": "Cheapest first.",
+            "items": {
+              "$ref": "#/components/schemas/StorefrontShippingOption"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "currency",
+          "options",
+          "degraded",
+          "expires_at"
         ],
         "type": "object"
       },
@@ -3042,6 +3436,205 @@
         "tags": [
           "health"
         ]
+      }
+    },
+    "/v1/my-purchases": {
+      "get": {
+        "description": "What the authenticated buyer bought anywhere on the platform, newest first, in every state. The buyer comes from the token, never from the request.",
+        "operationId": "orders.myPurchases.list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 50,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyPurchasesOutputBody"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "List my purchases in every store",
+        "tags": [
+          "orders"
+        ],
+        "x-sellvex-actor-types": [
+          "customer"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "orders.purchases.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform"
+      }
+    },
+    "/v1/my-purchases/{order_id}": {
+      "get": {
+        "description": "One of the buyer's seller orders with its items, its history, the destination given at checkout and, when it travels by courier, the delivery's timeline and the four-digit code to tell the courier. Another buyer's order answers 404, exactly as one that does not exist.",
+        "operationId": "orders.myPurchases.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PurchaseDetail"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read one of my purchases",
+        "tags": [
+          "orders"
+        ],
+        "x-sellvex-actor-types": [
+          "customer"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 8,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "orders.purchases.read",
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "platform"
       }
     },
     "/v1/payment-webhooks/{provider}": {
@@ -3262,6 +3855,64 @@
         "x-sellvex-latency-budget-p99-ms": 150,
         "x-sellvex-max-database-queries": 3,
         "x-sellvex-performance-class": "tenant-read",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/shipping-quotes": {
+      "post": {
+        "description": "What sending the cart costs, from the store's pickup address to the address set on the cart. A cart without an address is refused with 422 storefront.no_destination, and a store without a pickup address with 409 storefront.no_origin.",
+        "operationId": "storefront.shippingQuotes.create",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontQuoteInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StorefrontShippingQuote"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Quote shipping for a cart",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 12,
+        "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-replica-allowed": false
       }
     },
