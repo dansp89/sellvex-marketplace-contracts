@@ -11416,6 +11416,79 @@ paths:
         - personal
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
+  /v1/stores/{store_id}/contact-messages/{message_id}:
+    get:
+      description: One message of the store's inbox. Another store's message is 404 stores.contact_message_not_found.
+      operationId: stores.contactMessages.get
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: message_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StoreContactMessage"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Read one message a visitor wrote to the store
+      tags:
+        - stores
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: stores.messages.read
+      x-sellvex-reads:
+        - personal
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
   /v1/stores/{store_id}/hostnames:
     get:
       description: The names this store answers on, with the state of each. A pending domain carries the token to publish in DNS.

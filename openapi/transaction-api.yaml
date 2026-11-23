@@ -1560,7 +1560,7 @@ components:
         proof:
           $ref: "#/components/schemas/DeliveryProof"
         recipient_phone:
-          description: The phone of whoever receives it. Shown to the courier of the ride while it is on the street, never before acceptance nor after it ends.
+          description: "The phone of whoever receives it. Shown only to the courier of the ride, and only while the goods are with them on the way: in_route or attempt_failed. Never on the offer, while collecting (assigned), nor after the ride ends."
           type: string
         regime_id:
           type: string
@@ -5537,8 +5537,23 @@ paths:
       x-sellvex-self: true
   /v1/courier/payouts:
     get:
-      description: What every network paid the courier of the token, newest first.
+      description: What every network paid the courier of the token, newest first, paged by next_cursor like every other list.
       operationId: payouts.courierPayouts.mine
+      parameters:
+        - explode: false
+          in: query
+          name: cursor
+          schema:
+            maxLength: 512
+            type: string
+        - explode: false
+          in: query
+          name: limit
+          schema:
+            format: int64
+            maximum: 200
+            minimum: 1
+            type: integer
       responses:
         "200":
           content:
@@ -5564,6 +5579,12 @@ paths:
               schema:
                 $ref: "#/components/schemas/Problem"
           description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
         "500":
           content:
             application/problem+json:

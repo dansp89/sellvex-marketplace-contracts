@@ -929,7 +929,7 @@
             "$ref": "#/components/schemas/DeliveryProof"
           },
           "recipient_phone": {
-            "description": "The phone of whoever receives it. Shown to the courier of the ride while it is on the street, never before acceptance nor after it ends.",
+            "description": "The phone of whoever receives it. Shown only to the courier of the ride, and only while the goods are with them on the way: in_route or attempt_failed. Never on the offer, while collecting (assigned), nor after the ride ends.",
             "type": "string"
           },
           "regime_id": {
