@@ -1745,6 +1745,21 @@
         ],
         "type": "object"
       },
+      "StorefrontNewsletterConfirmInputBody": {
+        "additionalProperties": false,
+        "properties": {
+          "token": {
+            "description": "The token of the link mailed by the subscription.",
+            "maxLength": 200,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "token"
+        ],
+        "type": "object"
+      },
       "StorefrontNewsletterInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -3521,7 +3536,7 @@
     },
     "/v1/storefronts/{store_id}/newsletter": {
       "post": {
-        "description": "Records the visitor's marketing consent with this store, and only this one: consent is per store (DEC-PRIV-003). The e-mail is the consent's buyer reference, so the store's marketing messages to it pass the consent check. Subscribing twice keeps the consent in force.",
+        "description": "Double opt-in: the subscription stays pending and the e-mail receives a one-time link, valid 48 hours. Only POST .../newsletter/confirm with that link's token records the marketing consent, with this store and only this one (DEC-PRIV-003). The answer is 202 whether a link was mailed or not (already subscribed, or more than 3 links to that e-mail in the last hour), so it says nothing about who is subscribed. A deployment that cannot mail answers 409 privacy.confirmation_unavailable.",
         "operationId": "storefront.newsletter.subscribe",
         "parameters": [
           {
@@ -3545,8 +3560,8 @@
           "required": true
         },
         "responses": {
-          "201": {
-            "description": "Created"
+          "202": {
+            "description": "Accepted"
           },
           "default": {
             "content": {
@@ -3565,7 +3580,58 @@
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 300,
-        "x-sellvex-max-database-queries": 6,
+        "x-sellvex-max-database-queries": 8,
+        "x-sellvex-performance-class": "transactional-write",
+        "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/storefronts/{store_id}/newsletter/confirm": {
+      "post": {
+        "description": "Spends the one-time link mailed by the subscription and records the marketing consent with this store. A link already used, expired or of another store is refused with 422 privacy.confirmation_invalid.",
+        "operationId": "storefront.newsletter.confirm",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StorefrontNewsletterConfirmInputBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "No Content"
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Confirm a newsletter subscription",
+        "tags": [
+          "storefront"
+        ],
+        "x-sellvex-cache-policy": "none",
+        "x-sellvex-latency-budget-p99-ms": 300,
+        "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "transactional-write",
         "x-sellvex-replica-allowed": false
       }
@@ -4629,6 +4695,119 @@
           }
         ],
         "summary": "List the messages visitors wrote to the store",
+        "tags": [
+          "stores"
+        ],
+        "x-sellvex-actor-types": [
+          "platform_operator",
+          "store_member",
+          "api_client",
+          "extension"
+        ],
+        "x-sellvex-cache-policy": "private",
+        "x-sellvex-latency-budget-p99-ms": 150,
+        "x-sellvex-max-database-queries": 2,
+        "x-sellvex-performance-class": "authenticated-read",
+        "x-sellvex-permission": "stores.messages.read",
+        "x-sellvex-reads": [
+          "personal"
+        ],
+        "x-sellvex-replica-allowed": false,
+        "x-sellvex-scope": "store"
+      }
+    },
+    "/v1/stores/{store_id}/contact-messages/{message_id}": {
+      "get": {
+        "description": "One message of the store's inbox. Another store's message is 404 stores.contact_message_not_found.",
+        "operationId": "stores.contactMessages.get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "store_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "message_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StoreContactMessage"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "summary": "Read one message a visitor wrote to the store",
         "tags": [
           "stores"
         ],
