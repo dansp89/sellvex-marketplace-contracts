@@ -419,7 +419,12 @@
             "format": "uuid",
             "type": "string"
           },
+          "shipping": {
+            "$ref": "#/components/schemas/CheckoutShipping",
+            "description": "The shipping option chosen, as the server checked it when the checkout started."
+          },
           "shipping_included": {
+            "description": "True when a shipping option was chosen and is part of total_amount.",
             "type": "boolean"
           },
           "status": {
@@ -453,7 +458,7 @@
             "type": "boolean"
           },
           "total_amount": {
-            "description": "Items only, in minor units. Taxes (DEC-TAX-001) and shipping are not calculated yet.",
+            "description": "Items plus the chosen shipping, in minor units. Taxes (DEC-TAX-001) are not calculated yet.",
             "format": "int64",
             "type": "integer"
           },
@@ -475,6 +480,65 @@
           "shipping_included",
           "created_at",
           "updated_at"
+        ],
+        "type": "object"
+      },
+      "CheckoutShipping": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "description": "In minor units of the quote currency.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "carrier": {
+            "type": "string"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "quote_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "service_code": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "quote_id",
+          "carrier",
+          "service_code",
+          "amount",
+          "currency"
+        ],
+        "type": "object"
+      },
+      "CheckoutShippingChoice": {
+        "additionalProperties": false,
+        "properties": {
+          "carrier": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          },
+          "quote_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "service_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "quote_id",
+          "carrier",
+          "service_code"
         ],
         "type": "object"
       },
@@ -3769,6 +3833,10 @@
             "format": "uuid",
             "type": "string"
           },
+          "shipping": {
+            "$ref": "#/components/schemas/PurchaseShipping",
+            "description": "The freight chosen at checkout and charged with the order. Absent when none was chosen."
+          },
           "status": {
             "enum": [
               "pending_payment",
@@ -3834,6 +3902,36 @@
           "status",
           "tracking_code",
           "timeline"
+        ],
+        "type": "object"
+      },
+      "PurchaseShipping": {
+        "additionalProperties": false,
+        "properties": {
+          "amount": {
+            "description": "In minor units of the order currency.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "carrier": {
+            "type": "string"
+          },
+          "quote_id": {
+            "format": "uuid",
+            "type": "string"
+          },
+          "service_code": {
+            "type": "string"
+          },
+          "service_name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "quote_id",
+          "carrier",
+          "service_code",
+          "amount"
         ],
         "type": "object"
       },
@@ -5341,6 +5439,10 @@
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
+          },
+          "shipping": {
+            "$ref": "#/components/schemas/CheckoutShippingChoice",
+            "description": "The shipping option chosen from a quote of this store. It is checked here (the store's quote, not expired, the option offered) and its price added to the order total."
           }
         },
         "required": [
@@ -5441,6 +5543,9 @@
             "format": "uuid",
             "type": "string"
           },
+          "shipping": {
+            "$ref": "#/components/schemas/CheckoutShipping"
+          },
           "status": {
             "type": "string"
           },
@@ -5469,6 +5574,9 @@
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
+          },
+          "shipping": {
+            "$ref": "#/components/schemas/CheckoutShippingChoice"
           }
         },
         "required": [
@@ -13064,7 +13172,7 @@
     },
     "/v1/storefronts/{store_id}/checkouts": {
       "post": {
-        "description": "Runs the checkout for an anonymous cart: reserves the stock, places the order and takes the payment, in one call. A step that fails reverses what the earlier ones did, so a buyer is never charged for stock that was not held. The answer says what happened and, when it worked, the order it made.",
+        "description": "Runs the checkout for an anonymous cart: reserves the stock, places the order and takes the payment, in one call. A step that fails reverses what the earlier ones did, so a buyer is never charged for stock that was not held. The answer says what happened and, when it worked, the order it made. shipping is an option of a quote from POST /v1/storefronts/{store_id}/shipping-quotes: checked here (this store's quote, not expired — 409 shipping.quote_expired —, an option it offers) and added to the total.",
         "operationId": "storefront.checkouts.create",
         "parameters": [
           {
@@ -14042,7 +14150,7 @@
     },
     "/v1/stores/{store_id}/checkouts": {
       "post": {
-        "description": "Freezes the cart, reserves stock, creates the order at current prices and authorizes the payment. The answer is the checkout: completed, failed with a failure_code after compensating every step, or payment_pending.",
+        "description": "Freezes the cart, reserves stock, creates the order at current prices and authorizes the payment. The answer is the checkout: completed, failed with a failure_code after compensating every step, or payment_pending. With shipping, the option is checked before anything is held: a quote of another store or unknown is refused with 404 shipping.quote_not_found, an expired one with 409 shipping.quote_expired, an option the quote does not offer with 422 shipping.option_not_found; its price is added to the order total.",
         "operationId": "checkout.checkouts.create",
         "parameters": [
           {
