@@ -1036,6 +1036,9 @@ components:
           type: string
         reason:
           type: string
+        simulated:
+          description: A courier the worker's simulator plays for tests (SELLVEX_COURIER_SIMULATOR); never a person.
+          type: boolean
         status:
           enum:
             - pending
@@ -1055,6 +1058,7 @@ components:
         - vehicle
         - status
         - online
+        - simulated
         - created_at
       type: object
     CourierRegime:
