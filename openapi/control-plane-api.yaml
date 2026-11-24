@@ -2515,6 +2515,200 @@ components:
         - open
         - min_password_length
       type: object
+    PlatformBrand:
+      additionalProperties: false
+      properties:
+        accent_color:
+          type: string
+        accent_color_dark:
+          type: string
+        address:
+          type: string
+        app_store:
+          type: string
+        domain:
+          type: string
+        facebook:
+          type: string
+        favicon_url:
+          type: string
+        google_play:
+          type: string
+        instagram:
+          type: string
+        legal_name:
+          type: string
+        logo_dark_url:
+          type: string
+        logo_display:
+          description: both, logo, name or none; empty at version 0.
+          type: string
+        logo_svg:
+          type: string
+        logo_url:
+          type: string
+        name:
+          type: string
+        primary_color:
+          type: string
+        primary_color_dark:
+          type: string
+        sender_email:
+          type: string
+        sender_name:
+          type: string
+        short_name:
+          type: string
+        site_url:
+          type: string
+        support_email:
+          type: string
+        support_phone:
+          type: string
+        tagline:
+          type: string
+        tax_id:
+          type: string
+        updated_at:
+          description: RFC 3339; empty at version 0.
+          type: string
+        version:
+          description: Increments on every write; 0 before any brand was written.
+          format: int64
+          type: integer
+        whatsapp:
+          type: string
+      required:
+        - version
+        - updated_at
+        - name
+        - short_name
+        - tagline
+        - domain
+        - site_url
+        - legal_name
+        - tax_id
+        - address
+        - support_email
+        - support_phone
+        - sender_name
+        - sender_email
+        - logo_svg
+        - logo_url
+        - logo_dark_url
+        - favicon_url
+        - logo_display
+        - primary_color
+        - accent_color
+        - primary_color_dark
+        - accent_color_dark
+        - instagram
+        - facebook
+        - whatsapp
+        - app_store
+        - google_play
+      type: object
+    PlatformBrandFields:
+      additionalProperties: false
+      properties:
+        accent_color:
+          description: "#RRGGBB."
+          maxLength: 7
+          type: string
+        accent_color_dark:
+          description: "#RRGGBB."
+          maxLength: 7
+          type: string
+        address:
+          maxLength: 1000
+          type: string
+        app_store:
+          maxLength: 2048
+          type: string
+        domain:
+          description: Host name, such as example.com.br.
+          maxLength: 300
+          type: string
+        facebook:
+          maxLength: 2048
+          type: string
+        favicon_url:
+          description: As logo_url.
+          maxLength: 360000
+          type: string
+        google_play:
+          maxLength: 2048
+          type: string
+        instagram:
+          maxLength: 2048
+          type: string
+        legal_name:
+          maxLength: 300
+          type: string
+        logo_dark_url:
+          description: As logo_url, for dark backgrounds.
+          maxLength: 360000
+          type: string
+        logo_display:
+          description: How the apps draw the identity; both when absent.
+          enum:
+            - both
+            - logo
+            - name
+            - none
+          type: string
+        logo_svg:
+          description: Inline SVG, at most 256 KB, with no script, event handler or foreignObject.
+          maxLength: 262144
+          type: string
+        logo_url:
+          description: https URL or data:image/(svg+xml|png|webp|jpeg);base64 of at most 256 KB.
+          maxLength: 360000
+          type: string
+        name:
+          maxLength: 300
+          minLength: 1
+          type: string
+        primary_color:
+          description: "#RRGGBB."
+          maxLength: 7
+          type: string
+        primary_color_dark:
+          description: "#RRGGBB."
+          maxLength: 7
+          type: string
+        sender_email:
+          maxLength: 300
+          type: string
+        sender_name:
+          description: Display name of the platform's e-mail and push.
+          maxLength: 300
+          type: string
+        short_name:
+          maxLength: 300
+          type: string
+        site_url:
+          description: https URL.
+          maxLength: 2048
+          type: string
+        support_email:
+          maxLength: 300
+          type: string
+        support_phone:
+          maxLength: 300
+          type: string
+        tagline:
+          maxLength: 300
+          type: string
+        tax_id:
+          maxLength: 300
+          type: string
+        whatsapp:
+          maxLength: 2048
+          type: string
+      required:
+        - name
+      type: object
     PolicySetting:
       additionalProperties: false
       properties:
@@ -4850,7 +5044,7 @@ paths:
       x-sellvex-scope: platform
   /v1/couriers/signup:
     post:
-      description: "The public signup of the Sellvex Entregas app (FR-COUR-003): the login is created in the identity provider with the actor type courier, through the same adapter as a buyer's. The courier then fills their profile (PUT /v1/courier/me) and sends their documents, and a network reviews them. An e-mail that already has an account is refused with 409 identity.signup_login_exists."
+      description: "The public signup of the courier delivery app (shown to users as <brand> Delivery) (FR-COUR-003): the login is created in the identity provider with the actor type courier, through the same adapter as a buyer's. The courier then fills their profile (PUT /v1/courier/me) and sends their documents, and a network reviews them. An e-mail that already has an account is refused with 409 identity.signup_login_exists."
       operationId: identity.couriers.signup
       requestBody:
         content:
@@ -9012,6 +9206,98 @@ paths:
       x-sellvex-max-database-queries: 8
       x-sellvex-performance-class: control-plane
       x-sellvex-replica-allowed: false
+  /v1/platform/brand:
+    put:
+      description: Writes a new version of the brand; the answer is what GET /v1/public/brand returns from now on. Only develop and super_admin of the platform may call it. Writing what is already there keeps the version.
+      operationId: brand.platformBrand.update
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - description: The ETag last read, such as "3"; the write is refused with 412 when the brand has another version.
+          in: header
+          name: If-Match
+          schema:
+            description: The ETag last read, such as "3"; the write is refused with 412 when the brand has another version.
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PlatformBrandFields"
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformBrand"
+          description: OK
+          headers:
+            ETag:
+              schema:
+                type: string
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Set the platform brand
+      tags:
+        - brand
+      x-sellvex-actor-types:
+        - platform_operator
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 3
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: brand.brand.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
   /v1/platform/memberships:
     get:
       description: Who operates the platform, newest first. Revoked memberships are absent.
@@ -10435,6 +10721,44 @@ paths:
       x-sellvex-permission: privacy.requests.read
       x-sellvex-replica-allowed: false
       x-sellvex-scope: platform
+  /v1/public/brand:
+    get:
+      description: Name, logos, colors and contacts every app of the platform shows, for a caller with no credential. Before any brand was written it answers version 0 with every field empty, and the client keeps its own fallback. Send If-None-Match with the last ETag to receive 304 when nothing changed.
+      operationId: brand.publicBrand.get
+      parameters:
+        - in: header
+          name: If-None-Match
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PlatformBrand"
+          description: OK
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+            ETag:
+              schema:
+                type: string
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: The platform brand
+      tags:
+        - brand
+      x-sellvex-cache-policy: shared
+      x-sellvex-latency-budget-p99-ms: 50
+      x-sellvex-max-database-queries: 1
+      x-sellvex-performance-class: public-read
+      x-sellvex-replica-allowed: true
+      x-sellvex-replica-max-lag-ms: 5000
   /v1/storefronts/{store_id}/contact-messages:
     post:
       description: A visitor's message to the store, without an account. At most 5 an hour from one origin and 100 an hour to one store (409 stores.contact_rate_limited); a message with more than 3 links is refused. The answer is 202 also when the hidden website field marks it as a robot's, which is then not kept.

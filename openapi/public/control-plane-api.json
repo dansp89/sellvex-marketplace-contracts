@@ -1239,6 +1239,130 @@
         ],
         "type": "object"
       },
+      "PlatformBrand": {
+        "additionalProperties": false,
+        "properties": {
+          "accent_color": {
+            "type": "string"
+          },
+          "accent_color_dark": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          },
+          "app_store": {
+            "type": "string"
+          },
+          "domain": {
+            "type": "string"
+          },
+          "facebook": {
+            "type": "string"
+          },
+          "favicon_url": {
+            "type": "string"
+          },
+          "google_play": {
+            "type": "string"
+          },
+          "instagram": {
+            "type": "string"
+          },
+          "legal_name": {
+            "type": "string"
+          },
+          "logo_dark_url": {
+            "type": "string"
+          },
+          "logo_display": {
+            "description": "both, logo, name or none; empty at version 0.",
+            "type": "string"
+          },
+          "logo_svg": {
+            "type": "string"
+          },
+          "logo_url": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "primary_color": {
+            "type": "string"
+          },
+          "primary_color_dark": {
+            "type": "string"
+          },
+          "sender_email": {
+            "type": "string"
+          },
+          "sender_name": {
+            "type": "string"
+          },
+          "short_name": {
+            "type": "string"
+          },
+          "site_url": {
+            "type": "string"
+          },
+          "support_email": {
+            "type": "string"
+          },
+          "support_phone": {
+            "type": "string"
+          },
+          "tagline": {
+            "type": "string"
+          },
+          "tax_id": {
+            "type": "string"
+          },
+          "updated_at": {
+            "description": "RFC 3339; empty at version 0.",
+            "type": "string"
+          },
+          "version": {
+            "description": "Increments on every write; 0 before any brand was written.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "whatsapp": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "updated_at",
+          "name",
+          "short_name",
+          "tagline",
+          "domain",
+          "site_url",
+          "legal_name",
+          "tax_id",
+          "address",
+          "support_email",
+          "support_phone",
+          "sender_name",
+          "sender_email",
+          "logo_svg",
+          "logo_url",
+          "logo_dark_url",
+          "favicon_url",
+          "logo_display",
+          "primary_color",
+          "accent_color",
+          "primary_color_dark",
+          "accent_color_dark",
+          "instagram",
+          "facebook",
+          "whatsapp",
+          "app_store",
+          "google_play"
+        ],
+        "type": "object"
+      },
       "PreferenceInputBody": {
         "additionalProperties": false,
         "properties": {
@@ -1855,7 +1979,7 @@
   "paths": {
     "/v1/couriers/signup": {
       "post": {
-        "description": "The public signup of the Sellvex Entregas app (FR-COUR-003): the login is created in the identity provider with the actor type courier, through the same adapter as a buyer's. The courier then fills their profile (PUT /v1/courier/me) and sends their documents, and a network reviews them. An e-mail that already has an account is refused with 409 identity.signup_login_exists.",
+        "description": "The public signup of the courier delivery app (shown to users as \u003cbrand\u003e Delivery) (FR-COUR-003): the login is created in the identity provider with the actor type courier, through the same adapter as a buyer's. The courier then fills their profile (PUT /v1/courier/me) and sends their documents, and a network reviews them. An e-mail that already has an account is refused with 409 identity.signup_login_exists.",
         "operationId": "identity.couriers.signup",
         "requestBody": {
           "content": {
@@ -3409,6 +3533,65 @@
         "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "control-plane",
         "x-sellvex-replica-allowed": false
+      }
+    },
+    "/v1/public/brand": {
+      "get": {
+        "description": "Name, logos, colors and contacts every app of the platform shows, for a caller with no credential. Before any brand was written it answers version 0 with every field empty, and the client keeps its own fallback. Send If-None-Match with the last ETag to receive 304 when nothing changed.",
+        "operationId": "brand.publicBrand.get",
+        "parameters": [
+          {
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlatformBrand"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "The platform brand",
+        "tags": [
+          "brand"
+        ],
+        "x-sellvex-cache-policy": "shared",
+        "x-sellvex-latency-budget-p99-ms": 50,
+        "x-sellvex-max-database-queries": 1,
+        "x-sellvex-performance-class": "public-read",
+        "x-sellvex-replica-allowed": true,
+        "x-sellvex-replica-max-lag-ms": 5000
       }
     },
     "/v1/storefronts/{store_id}/contact-messages": {
