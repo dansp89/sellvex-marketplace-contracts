@@ -418,6 +418,11 @@
             "maxLength": 254,
             "type": "string"
           },
+          "invite_token": {
+            "description": "The token of a store's invite (FR-COUR-006): the courier joins that store's own fleet as pending, and the CDL of the store's organization reviews them. A token used, cancelled or expired is refused with 422 couriers.invite_invalid before the login is made.",
+            "maxLength": 100,
+            "type": "string"
+          },
           "name": {
             "maxLength": 120,
             "minLength": 2,
@@ -2019,7 +2024,7 @@
         ],
         "x-sellvex-cache-policy": "none",
         "x-sellvex-latency-budget-p99-ms": 1000,
-        "x-sellvex-max-database-queries": 4,
+        "x-sellvex-max-database-queries": 8,
         "x-sellvex-performance-class": "control-plane",
         "x-sellvex-replica-allowed": false
       }

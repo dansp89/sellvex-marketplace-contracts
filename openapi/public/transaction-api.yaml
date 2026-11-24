@@ -358,6 +358,91 @@ components:
         - status
         - updated_at
       type: object
+    CourierInvite:
+      additionalProperties: false
+      properties:
+        claimed_at:
+          format: date-time
+          type: string
+        courier_id:
+          format: uuid
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        email:
+          type: string
+        expires_at:
+          format: date-time
+          type: string
+        fleet_id:
+          format: uuid
+          type: string
+        id:
+          format: uuid
+          type: string
+        last_sent_at:
+          format: date-time
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        sent_count:
+          format: int64
+          type: integer
+        stage:
+          description: "Where the person stands: invited (link not used), signed_up (account made, profile not yet), in_review (waiting for the CDL), approved, rejected or suspended by the CDL, removed from the fleet, expired or cancelled."
+          enum:
+            - invited
+            - signed_up
+            - in_review
+            - approved
+            - rejected
+            - suspended
+            - removed
+            - expired
+            - cancelled
+          type: string
+        status:
+          enum:
+            - open
+            - claimed
+            - cancelled
+          type: string
+      required:
+        - id
+        - fleet_id
+        - name
+        - phone
+        - status
+        - stage
+        - expires_at
+        - sent_count
+        - last_sent_at
+        - created_at
+      type: object
+    CourierInviteDelivery:
+      additionalProperties: false
+      properties:
+        email:
+          description: "skipped: the invite has no e-mail."
+          enum:
+            - sent
+            - failed
+            - skipped
+          type: string
+        sms:
+          description: "unavailable: no SMS provider is configured."
+          enum:
+            - sent
+            - failed
+            - unavailable
+          type: string
+      required:
+        - email
+        - sms
+      type: object
     CourierMembership:
       additionalProperties: false
       properties:
@@ -978,6 +1063,41 @@ components:
       required:
         - status
       type: object
+    InviteCreateInputBody:
+      additionalProperties: false
+      properties:
+        email:
+          maxLength: 254
+          type: string
+        fleet_id:
+          description: A private fleet of the store; a shared one also serves other stores and is refused.
+          format: uuid
+          type: string
+        name:
+          maxLength: 120
+          minLength: 2
+          type: string
+        phone:
+          maxLength: 20
+          minLength: 10
+          type: string
+      required:
+        - name
+        - phone
+        - fleet_id
+      type: object
+    InvitesOutputBody:
+      additionalProperties: false
+      properties:
+        items:
+          items:
+            $ref: "#/components/schemas/CourierInvite"
+          type:
+            - array
+            - "null"
+      required:
+        - items
+      type: object
     Item:
       additionalProperties: false
       properties:
@@ -1485,6 +1605,24 @@ components:
         - title
         - status
         - code
+      type: object
+    PublicCourierInvite:
+      additionalProperties: false
+      properties:
+        expires_at:
+          format: date-time
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        store_name:
+          type: string
+      required:
+        - store_name
+        - name
+        - phone
+        - expires_at
       type: object
     PurchaseDeliveryStep:
       additionalProperties: false
@@ -2007,6 +2145,76 @@ components:
         - discount_amount
         - created_at
         - updated_at
+      type: object
+    SentCourierInvite:
+      additionalProperties: false
+      properties:
+        claimed_at:
+          format: date-time
+          type: string
+        courier_id:
+          format: uuid
+          type: string
+        created_at:
+          format: date-time
+          type: string
+        delivery:
+          $ref: "#/components/schemas/CourierInviteDelivery"
+        email:
+          type: string
+        expires_at:
+          format: date-time
+          type: string
+        fleet_id:
+          format: uuid
+          type: string
+        id:
+          format: uuid
+          type: string
+        invite_url:
+          description: The link with the one-time token, to share by hand; shown only now. Empty when SELLVEX_COURIER_INVITE_URL is not set.
+          type: string
+        last_sent_at:
+          format: date-time
+          type: string
+        name:
+          type: string
+        phone:
+          type: string
+        sent_count:
+          format: int64
+          type: integer
+        stage:
+          description: "Where the person stands: invited (link not used), signed_up (account made, profile not yet), in_review (waiting for the CDL), approved, rejected or suspended by the CDL, removed from the fleet, expired or cancelled."
+          enum:
+            - invited
+            - signed_up
+            - in_review
+            - approved
+            - rejected
+            - suspended
+            - removed
+            - expired
+            - cancelled
+          type: string
+        status:
+          enum:
+            - open
+            - claimed
+            - cancelled
+          type: string
+      required:
+        - delivery
+        - id
+        - fleet_id
+        - name
+        - phone
+        - status
+        - stage
+        - expires_at
+        - sent_count
+        - last_sent_at
+        - created_at
       type: object
     Settlement:
       additionalProperties: false
@@ -2587,6 +2795,40 @@ info:
   version: 0.1.0
 openapi: 3.1.0
 paths:
+  /v1/courier-invites/{token}:
+    get:
+      description: "For the courier app's signup: the store's name and the name and phone the store typed, to fill the form. A link used, cancelled, expired or unknown is 404 couriers.invite_not_found alike."
+      operationId: couriers.invites.public
+      parameters:
+        - in: path
+          name: token
+          required: true
+          schema:
+            maxLength: 100
+            minLength: 20
+            pattern: ^[A-Za-z0-9_-]+$
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PublicCourierInvite"
+          description: OK
+        default:
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Error
+      summary: Read a courier invite by its link
+      tags:
+        - couriers
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 1000
+      x-sellvex-max-database-queries: 1
+      x-sellvex-performance-class: control-plane
+      x-sellvex-replica-allowed: false
   /v1/health/liveness:
     get:
       description: Reports that the process can serve requests. Does not probe dependencies.
@@ -3625,6 +3867,345 @@ paths:
       x-sellvex-max-database-queries: 8
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: couriers.fleets.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/courier-invites:
+    get:
+      description: Newest first, each with where the person stands at the CDL.
+      operationId: couriers.storeInvites.list
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/InvitesOutputBody"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: List the store's courier invites
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 2
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: couriers.invites.read
+      x-sellvex-reads:
+        - personal
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+    post:
+      description: "Sends the person a one-time link, good for seven days, to the courier app's signup (by e-mail when given; SMS when a provider is configured). Once registered they are a pending member of the store's private fleet, and the CDL of the store's organization reviews them: the store never approves a courier."
+      operationId: couriers.storeInvites.create
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/InviteCreateInputBody"
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SentCourierInvite"
+          description: Created
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Invite a courier of the store
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 6
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.invites.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/courier-invites/{invite_id}/cancel:
+    post:
+      description: Its link stops working. An invite already used is refused.
+      operationId: couriers.storeInvites.cancel
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: invite_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourierInvite"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Cancel a courier invite
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 5
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.invites.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/courier-invites/{invite_id}/resend:
+    post:
+      description: A new link, good for another seven days; the previous one stops working. An invite already used or cancelled is refused.
+      operationId: couriers.storeInvites.resend
+      parameters:
+        - description: Unique key for this mutation. Retrying with the same key and payload returns the original response.
+          in: header
+          name: Idempotency-Key
+          required: true
+          schema:
+            maxLength: 255
+            minLength: 1
+            type: string
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: invite_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SentCourierInvite"
+          description: OK
+        "400":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Bad Request
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "409":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Conflict
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Send a courier invite again
+      tags:
+        - couriers
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: none
+      x-sellvex-latency-budget-p99-ms: 300
+      x-sellvex-max-database-queries: 5
+      x-sellvex-performance-class: transactional-write
+      x-sellvex-permission: couriers.invites.write
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/delivery-labels:
