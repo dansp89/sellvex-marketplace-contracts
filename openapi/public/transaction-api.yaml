@@ -2710,6 +2710,38 @@ components:
       required:
         - items
       type: object
+    TrackingCourierView:
+      additionalProperties: false
+      properties:
+        first_name:
+          type: string
+        heading:
+          description: Degrees clockwise from north, between the last two positions.
+          format: double
+          type: number
+        latitude:
+          description: Absent until the courier's app reported a position.
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+        updated_at:
+          description: When the position was taken.
+          format: date-time
+          type: string
+        vehicle:
+          enum:
+            - bicycle
+            - motorcycle
+            - car
+            - van
+            - on_foot
+          type: string
+      required:
+        - first_name
+        - vehicle
+      type: object
     TrackingEvent:
       additionalProperties: false
       properties:
@@ -2733,6 +2765,56 @@ components:
         - description
         - occurred_at
         - recorded_at
+      type: object
+    TrackingPointView:
+      additionalProperties: false
+      properties:
+        latitude:
+          format: double
+          type: number
+        longitude:
+          format: double
+          type: number
+      required:
+        - latitude
+        - longitude
+      type: object
+    TrackingView:
+      additionalProperties: false
+      properties:
+        active:
+          description: "A courier is on the ride: assigned (going to collect) or in route. Otherwise there is no courier and no position."
+          type: boolean
+        courier:
+          $ref: "#/components/schemas/TrackingCourierView"
+          description: "Present only while active. The first name, the vehicle and the position: nothing else of the courier."
+        destination:
+          $ref: "#/components/schemas/TrackingPointView"
+          description: Where the ride ends, when it has coordinates.
+        pickup:
+          $ref: "#/components/schemas/TrackingPointView"
+          description: Where the ride starts, when it has coordinates.
+        poll_seconds:
+          description: How often to ask again while active.
+          format: int64
+          type: integer
+        stage:
+          description: to_pickup while the courier goes to the store, to_destination once the parcel is with them.
+          enum:
+            - to_pickup
+            - to_destination
+          type: string
+        status:
+          description: "The delivery's status: offering, assigned, in_route, attempt_failed, delivered, returned..."
+          type: string
+        task_id:
+          format: uuid
+          type: string
+      required:
+        - task_id
+        - status
+        - active
+        - poll_seconds
       type: object
     Transition:
       additionalProperties: false
@@ -2985,6 +3067,68 @@ paths:
       security:
         - bearer: []
       summary: Read one of my purchases
+      tags:
+        - orders
+      x-sellvex-actor-types:
+        - customer
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 8
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: orders.purchases.read
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: platform
+  /v1/my-purchases/{order_id}/tracking:
+    get:
+      description: "Where the courier of the purchase's local delivery is, while the ride is on: first name, vehicle, position and heading, the stage, and the pins of the pickup and the destination. Once delivered or failed the courier and the position are gone. Poll every poll_seconds. Another buyer's order answers 404, exactly as one that does not exist."
+      operationId: orders.myPurchases.tracking
+      parameters:
+        - in: path
+          name: order_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingView"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Follow my delivery on the map
       tags:
         - orders
       x-sellvex-actor-types:
@@ -4849,6 +4993,79 @@ paths:
       x-sellvex-max-database-queries: 12
       x-sellvex-performance-class: transactional-write
       x-sellvex-permission: dispatch.tasks.write
+      x-sellvex-replica-allowed: false
+      x-sellvex-scope: store
+  /v1/stores/{store_id}/delivery-tasks/{task_id}/tracking:
+    get:
+      description: "Where the courier of the delivery is, while the ride is on (assigned or in route): first name, vehicle, position and heading, the stage, and the pins of the pickup and the destination. Once delivered, failed or returned the courier and the position are gone. Poll every poll_seconds."
+      operationId: dispatch.tasks.tracking
+      parameters:
+        - in: path
+          name: store_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+        - in: path
+          name: task_id
+          required: true
+          schema:
+            format: uuid
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TrackingView"
+          description: OK
+        "401":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unauthorized
+        "403":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Forbidden
+        "404":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Not Found
+        "422":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/problem+json:
+              schema:
+                $ref: "#/components/schemas/Problem"
+          description: Internal Server Error
+      security:
+        - bearer: []
+      summary: Follow a local delivery on the map
+      tags:
+        - dispatch
+      x-sellvex-actor-types:
+        - platform_operator
+        - store_member
+        - api_client
+        - extension
+      x-sellvex-cache-policy: private
+      x-sellvex-latency-budget-p99-ms: 150
+      x-sellvex-max-database-queries: 6
+      x-sellvex-performance-class: authenticated-read
+      x-sellvex-permission: dispatch.tasks.read
+      x-sellvex-reads:
+        - personal
       x-sellvex-replica-allowed: false
       x-sellvex-scope: store
   /v1/stores/{store_id}/delivery-volumes/{volume_id}/custody:
